@@ -34,16 +34,16 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label>Email</label>
+            <label>Email hoặc Tên đăng nhập</label>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
-                type="email"
+                type="text"
                 className="form-control"
                 style={{ paddingLeft: '40px' }}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Nhập email..."
+                placeholder="Nhập email hoặc tên đăng nhập..."
                 required
                 disabled={loading}
               />

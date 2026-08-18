@@ -39,33 +39,44 @@ export async function initStorage() {
   }
 }
 
-export async function authenticateUser(email, password) {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+export async function authenticateUser(emailOrUsername, password) {
+  let loginEmail = emailOrUsername;
+  let userData = null;
+
+  try {
+    const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
+    const found = usersSnap.docs.find(d => {
+      const data = d.data();
+      return data.username === emailOrUsername || data.email === emailOrUsername;
+    });
+
+    if (found) {
+      userData = found.data();
+      loginEmail = userData.email;
+    }
+  } catch (err) {
+    console.warn("Lỗi truy vấn users Firestore, đăng nhập bằng email trực tiếp:", err);
+  }
+
+  const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
   const user = userCredential.user;
   
-  const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
-  const found = usersSnap.docs.find(d => {
-    const data = d.data();
-    return data.email === email || data.username === email;
-  });
-  
-  if (found) {
-    const data = found.data();
+  if (userData) {
     return {
       uid: user.uid,
       email: user.email,
-      username: data.username || email,
-      role: data.role,
-      displayName: data.displayName
+      username: userData.username || emailOrUsername,
+      role: userData.role,
+      displayName: userData.displayName
     };
   }
   
   return {
     uid: user.uid,
     email: user.email,
-    username: email,
+    username: emailOrUsername,
     role: 'user',
-    displayName: email.split('@')[0]
+    displayName: emailOrUsername.split('@')[0]
   };
 }
 
