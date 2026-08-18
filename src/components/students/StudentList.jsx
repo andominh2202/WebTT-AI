@@ -24,11 +24,22 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
     });
   }, [students, search, statusFilter, subjectFilter]);
 
+  const [studentToDelete, setStudentToDelete] = useState(null);
+
   const confirmDelete = (student) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa học sinh "${student.fullName}" (${student.id})?\nMọi lịch sử học phí liên quan cũng sẽ bị xóa!`)) {
-      deleteStudent(student.id);
-      showToast('Đã xóa', `Đã xóa học sinh ${student.fullName}`, 'danger');
+    setStudentToDelete(student);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (studentToDelete) {
+      await deleteStudent(studentToDelete.id);
+      showToast('Đã xóa', `Đã xóa học sinh ${studentToDelete.fullName}`, 'danger');
+      setStudentToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setStudentToDelete(null);
   };
 
   const uniqueSubjects = useMemo(() => {
@@ -148,6 +159,28 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
           <Users size={48} />
           <h4>Không tìm thấy học sinh nào</h4>
           <p>Thử tìm kiếm với từ khóa khác hoặc thêm học sinh mới.</p>
+        </div>
+      )}
+
+      {/* Modal Xác nhận xóa */}
+      {studentToDelete && (
+        <div className="modal-overlay active">
+          <div className="modal-container" style={{ maxWidth: 400 }}>
+            <div className="modal-header">
+              <h3>Xác nhận xóa</h3>
+              <button className="modal-close" onClick={cancelDelete}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Bạn có chắc chắn muốn xóa học sinh <strong>{studentToDelete.fullName}</strong> ({studentToDelete.id})?</p>
+              <p style={{ color: 'var(--danger)', marginTop: '0.75rem', fontSize: '0.85rem', padding: '0.5rem', background: 'var(--danger-light)', borderRadius: 'var(--radius-sm)' }}>
+                <strong>Lưu ý:</strong> Mọi lịch sử đóng học phí liên quan đến học sinh này cũng sẽ bị xóa vĩnh viễn và không thể khôi phục!
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={cancelDelete}>Hủy bỏ</button>
+              <button className="btn btn-danger" onClick={handleConfirmDelete}>Xác nhận xóa</button>
+            </div>
+          </div>
         </div>
       )}
     </section>
