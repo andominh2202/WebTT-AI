@@ -4,7 +4,7 @@ import { formatCurrency, formatDate, calculateAge } from '../../utils/storage';
 import { Search, Plus, Eye, Pencil, Trash2, Phone, CheckCircle, Clock, Users } from 'lucide-react';
 
 export default function StudentList({ onAddStudent, onEditStudent, onViewStudent }) {
-  const { students, subjects, deleteStudent, showToast } = useApp();
+  const { students, subjects, deleteStudent, showToast, currentUser } = useApp();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');

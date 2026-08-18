@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useApp } from './context/AppContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Toast from './components/Toast';
+import Login from './components/Login';
 import Dashboard from './components/dashboard/Dashboard';
 import StudentList from './components/students/StudentList';
 import StudentModal from './components/students/StudentModal';
@@ -13,7 +14,7 @@ import SettingsPage from './components/settings/SettingsPage';
 import './styles/style.css';
 
 export default function App() {
-  const { currentTab } = useApp();
+  const { currentTab, currentUser, switchTab } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Student Modal state
@@ -25,6 +26,13 @@ export default function App() {
 
   // CSV export ref (to call from Dashboard)
   const tuitionRef = useRef(null);
+
+  // Redirect user role if they somehow enter restricted settings tab
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'user' && currentTab === 'settings') {
+      switchTab('dashboard');
+    }
+  }, [currentUser, currentTab, switchTab]);
 
   const handleAddStudent = useCallback(() => {
     setEditStudentId(null);
@@ -40,11 +48,18 @@ export default function App() {
     setDetailStudentId(id);
   }, []);
 
-  const { switchTab } = useApp();
-
   const handleExportCSV = useCallback(() => {
     switchTab('tuition');
   }, [switchTab]);
+
+  if (!currentUser) {
+    return (
+      <>
+        <Login />
+        <Toast />
+      </>
+    );
+  }
 
   const renderContent = () => {
     switch (currentTab) {

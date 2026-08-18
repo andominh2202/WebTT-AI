@@ -7,10 +7,26 @@ const COLLECTIONS = {
   TUITION: 'tuition',
   SUBJECTS: 'subjects',
   TEACHERS: 'teachers',
+  USERS: 'users',
 };
 
 // Initialize default data if empty (Optional, but good for first run)
 export async function initStorage() {
+  // Initialize users if empty
+  const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
+  if (usersSnap.empty) {
+    const batch = writeBatch(db);
+    const defaultUsers = [
+      { id: 'admin', username: 'admin', password: 'admin', role: 'admin', displayName: 'Quản trị viên' },
+      { id: 'user', username: 'user', password: 'user', role: 'user', displayName: 'Nhân viên' }
+    ];
+    defaultUsers.forEach(u => {
+      const docRef = doc(collection(db, COLLECTIONS.USERS), u.id);
+      batch.set(docRef, u);
+    });
+    await batch.commit();
+  }
+
   const studentsSnap = await getDocs(collection(db, COLLECTIONS.STUDENTS));
   if (studentsSnap.empty) {
     const batch = writeBatch(db);
@@ -32,6 +48,24 @@ export async function initStorage() {
     });
     await batch.commit();
   }
+}
+
+export async function authenticateUser(username, password) {
+  const u = username.trim().toLowerCase();
+  const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
+  const found = usersSnap.docs.find(d => {
+    const data = d.data();
+    return data.username.toLowerCase() === u && data.password === password;
+  });
+  if (found) {
+    const data = found.data();
+    return {
+      username: data.username,
+      role: data.role,
+      displayName: data.displayName
+    };
+  }
+  return null;
 }
 
 // ==== Async CRUD Operations ====

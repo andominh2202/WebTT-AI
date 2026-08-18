@@ -17,6 +17,16 @@ export function AppProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Authentication State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('qlhs_current_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   // Khởi tạo và Lắng nghe Firebase
   useEffect(() => {
     let unsubs = [];
@@ -60,6 +70,31 @@ export function AppProvider({ children }) {
     }, 3500);
   }, []);
 
+  // Login/Logout Actions
+  const login = useCallback(async (username, password) => {
+    try {
+      const userObj = await S.authenticateUser(username, password);
+      if (userObj) {
+        setCurrentUser(userObj);
+        localStorage.setItem('qlhs_current_user', JSON.stringify(userObj));
+        showToast('Thành công', `Đăng nhập với vai trò ${userObj.displayName}`, 'success');
+        setCurrentTab('dashboard');
+        return true;
+      }
+    } catch (error) {
+      console.error('Lỗi đăng nhập:', error);
+    }
+    showToast('Thất bại', 'Sai tên tài khoản hoặc mật khẩu', 'danger');
+    return false;
+  }, [showToast]);
+
+  const logout = useCallback(() => {
+    setCurrentUser(null);
+    localStorage.removeItem('qlhs_current_user');
+    setCurrentTab('dashboard');
+    showToast('Thông báo', 'Đã đăng xuất tài khoản', 'info');
+  }, [showToast]);
+
   // Student CRUD (Firebase)
   const handleAddStudent = useCallback(async (data) => {
     await S.addStudent(data);
@@ -100,6 +135,7 @@ export function AppProvider({ children }) {
     importBackup: () => {}, // disabled
     resetData: () => {}, // disabled
     reload: () => {},
+    currentUser, login, logout
   };
 
   return (
