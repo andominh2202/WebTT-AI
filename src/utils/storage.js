@@ -1,5 +1,6 @@
 import { collection, doc, getDocs, setDoc, deleteDoc, query, onSnapshot, writeBatch, updateDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { db, auth } from '../config/firebase';
 import { INITIAL_STUDENTS, INITIAL_TUITION_RECORDS, INITIAL_SUBJECTS, INITIAL_TEACHERS, CLASS_MAP } from '../data/mockData';
 
 const COLLECTIONS = {
@@ -38,22 +39,38 @@ export async function initStorage() {
   }
 }
 
-export async function authenticateUser(username, password) {
-  const u = username.trim().toLowerCase();
+export async function authenticateUser(email, password) {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  
   const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
   const found = usersSnap.docs.find(d => {
     const data = d.data();
-    return data.username.toLowerCase() === u && data.password === password;
+    return data.email === email || data.username === email;
   });
+  
   if (found) {
     const data = found.data();
     return {
-      username: data.username,
+      uid: user.uid,
+      email: user.email,
+      username: data.username || email,
       role: data.role,
       displayName: data.displayName
     };
   }
-  return null;
+  
+  return {
+    uid: user.uid,
+    email: user.email,
+    username: email,
+    role: 'user',
+    displayName: email.split('@')[0]
+  };
+}
+
+export async function logoutUser() {
+  await signOut(auth);
 }
 
 // ==== Async CRUD Operations ====

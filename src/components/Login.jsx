@@ -4,15 +4,15 @@ import { GraduationCap, Lock, User, LogIn } from 'lucide-react';
 
 export default function Login() {
   const { login } = useApp();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username.trim() || !password) return;
+    if (!email.trim() || !password) return;
     setLoading(true);
-    await login(username, password);
+    await login(email, password);
     setLoading(false);
   };
 
@@ -34,16 +34,16 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label>Tài khoản</label>
+            <label>Email</label>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
-                type="text"
+                type="email"
                 className="form-control"
                 style={{ paddingLeft: '40px' }}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Tên đăng nhập..."
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nhập email..."
                 required
                 disabled={loading}
               />

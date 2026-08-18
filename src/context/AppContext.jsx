@@ -68,9 +68,9 @@ export function AppProvider({ children }) {
   }, []);
 
   // Login/Logout Actions
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (email, password) => {
     try {
-      const userObj = await S.authenticateUser(username, password);
+      const userObj = await S.authenticateUser(email, password);
       if (userObj) {
         setCurrentUser(userObj);
         showToast('Thành công', `Đăng nhập với vai trò ${userObj.displayName}`, 'success');
@@ -84,9 +84,9 @@ export function AppProvider({ children }) {
     return false;
   }, [showToast]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await S.logoutUser();
     setCurrentUser(null);
-    localStorage.removeItem('qlhs_current_user');
     setCurrentTab('dashboard');
     showToast('Thông báo', 'Đã đăng xuất tài khoản', 'info');
   }, [showToast]);
