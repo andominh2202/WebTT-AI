@@ -17,14 +17,11 @@ export function AppProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Authentication State
+  // Authentication State (không lưu localStorage nữa để bảo mật)
   const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('qlhs_current_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
+    // Xóa tk/mk cũ nếu còn lưu trong trình duyệt
+    localStorage.removeItem('qlhs_current_user');
+    return null;
   });
 
   // Khởi tạo và Lắng nghe Firebase
@@ -76,7 +73,6 @@ export function AppProvider({ children }) {
       const userObj = await S.authenticateUser(username, password);
       if (userObj) {
         setCurrentUser(userObj);
-        localStorage.setItem('qlhs_current_user', JSON.stringify(userObj));
         showToast('Thành công', `Đăng nhập với vai trò ${userObj.displayName}`, 'success');
         setCurrentTab('dashboard');
         return true;

@@ -12,20 +12,8 @@ const COLLECTIONS = {
 
 // Initialize default data if empty (Optional, but good for first run)
 export async function initStorage() {
-  // Initialize users if empty
-  const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
-  if (usersSnap.empty) {
-    const batch = writeBatch(db);
-    const defaultUsers = [
-      { id: 'admin', username: 'admin', password: 'admin', role: 'admin', displayName: 'Quản trị viên' },
-      { id: 'user', username: 'user', password: 'user', role: 'user', displayName: 'Nhân viên' }
-    ];
-    defaultUsers.forEach(u => {
-      const docRef = doc(collection(db, COLLECTIONS.USERS), u.id);
-      batch.set(docRef, u);
-    });
-    await batch.commit();
-  }
+  // Bỏ logic khởi tạo users tự động vì không muốn lưu tk/mk mặc định trong source code
+  // Users sẽ được quản lý trực tiếp trên database (Firestore)
 
   const studentsSnap = await getDocs(collection(db, COLLECTIONS.STUDENTS));
   if (studentsSnap.empty) {
