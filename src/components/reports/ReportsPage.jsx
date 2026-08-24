@@ -1,5 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate } from '../../utils/storage';
 import { Bar, Doughnut, Pie } from 'react-chartjs-2';
 import {
@@ -13,7 +17,9 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Le
 const PALETTE = ['#4f46e5','#10b981','#f59e0b','#0ea5e9','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16'];
 
 export default function ReportsPage() {
-  const { students, tuition, subjects } = useApp();
+  const { students } = useStudent();
+  const { tuition } = useTuition();
+  const { subjects } = useSettings();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
   // Set default search from start of current month to today

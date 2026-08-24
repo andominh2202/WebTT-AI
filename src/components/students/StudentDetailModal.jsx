@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate, calculateAge } from '../../utils/storage';
 import { X } from 'lucide-react';
 
 export default function StudentDetailModal({ isOpen, onClose, studentId }) {
-  const { tuition, students } = useApp();
+  const { tuition } = useTuition();
+  const { students } = useStudent();
 
   const student = useMemo(() => studentId ? students.find(s => s.id === studentId) : null, [studentId, students]);
 
@@ -47,16 +52,19 @@ export default function StudentDetailModal({ isOpen, onClose, studentId }) {
                   {student.status === 'official' ? <span className="badge badge-official">Chính thức</span> : <span className="badge badge-trial">Học thử</span>}
                 </span>
               </div>
-              <div className="detail-item"><span className="label">Lịch học</span><span className="val">{(student.scheduleDays || []).join(', ') || '---'}</span></div>
-              <div className="detail-item"><span className="label">Học phí</span><span className="val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{formatCurrency(student.monthlyFee || 0)}</span></div>
+              <div className="detail-item"><span className="label">Tổng học phí/tháng</span><span className="val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{formatCurrency((student.subjects || []).reduce((sum, s) => sum + ((s.feePerLesson || 0) * ((s.scheduleDays?.length || 1) * 4)), 0))}</span></div>
               <div className="detail-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}>
-                <span className="label">Môn học đăng ký</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                <span className="label">Môn học & Lịch học</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', marginTop: '0.5rem' }}>
                   {(student.subjects || []).length > 0 ? (
                     student.subjects.map((s, i) => (
-                      <span key={i} className="tag-subject" style={{ margin: 0 }} title={`Giáo viên: ${s.teacher}`}>
-                        {s.subject} ({s.teacher})
-                      </span>
+                      <div key={i} style={{ padding: '0.5rem 0.75rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                        <div><strong style={{ color: 'var(--primary)' }}>{s.subject}</strong> - {s.teacher}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                          <span>{(s.scheduleDays || []).join(', ') || 'Chưa xếp lịch'}</span>
+                          <span style={{ color: 'var(--success)', fontWeight: 600 }}>{formatCurrency(s.feePerLesson || 0)}/buổi</span>
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <span style={{ color: 'var(--text-muted)' }}>Chưa chọn</span>

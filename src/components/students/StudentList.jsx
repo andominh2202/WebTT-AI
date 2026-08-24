@@ -1,10 +1,17 @@
 import { useState, useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate, calculateAge } from '../../utils/storage';
-import { Search, Plus, Eye, Pencil, Trash2, Phone, CheckCircle, Clock, Users } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Trash2, Phone, CheckCircle, Clock, Users, Loader2 } from 'lucide-react';
 
 export default function StudentList({ onAddStudent, onEditStudent, onViewStudent }) {
-  const { students, subjects, deleteStudent, showToast, currentUser } = useApp();
+  const { students, deleteStudent, loadMore, hasMore, loading } = useStudent();
+  const { subjects } = useSettings();
+  const { currentUser } = useAuth();
+  const { showToast } = useUI();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
@@ -45,7 +52,17 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
   const uniqueSubjects = useMemo(() => {
     const used = new Set();
     students.forEach(s => (s.subjects || []).forEach(sub => used.add(sub.subject)));
-    return subjects.filter(sub => used.has(sub));
+    const filtered = subjects.filter(sub => used.has(sub));
+    return filtered.sort((a, b) => {
+      const getGrade = (name) => {
+        const match = name.match(/(12|11|10|9|8|7|6)/);
+        return match ? parseInt(match[0], 10) : 0;
+      };
+      const gradeA = getGrade(a);
+      const gradeB = getGrade(b);
+      if (gradeA !== gradeB) return gradeB - gradeA;
+      return a.localeCompare(b);
+    });
   }, [students, subjects]);
 
   return (
@@ -99,7 +116,14 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
             {filtered.map((s, idx) => {
               const ageText = calculateAge(s.dob);
               const dobDisplay = s.dob ? `${formatDate(s.dob)} ${ageText ? `(${ageText})` : ''}` : '---';
-              const schedule = (s.scheduleDays || []).join(', ') || '---';
+              
+              const allDays = new Set();
+              let totalMonthlyFee = 0;
+              (s.subjects || []).forEach(sub => {
+                (sub.scheduleDays || []).forEach(d => allDays.add(d));
+                totalMonthlyFee += (sub.feePerLesson || 0) * ((sub.scheduleDays?.length || 1) * 4);
+              });
+              const schedule = Array.from(allDays).join(', ') || '---';
 
               return (
                 <tr key={s.id}>
@@ -119,7 +143,11 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
                   <td>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, maxWidth: 180 }}>
                       {(s.subjects || []).length > 0
-                        ? s.subjects.map((sub, i) => <span key={i} className="tag-subject" title={`Giáo viên: ${sub.teacher}`}>{sub.subject}</span>)
+                        ? s.subjects.map((sub, i) => (
+                            <span key={i} className="tag-subject" title={`Giáo viên: ${sub.teacher} | ${formatCurrency(sub.feePerLesson || 0)}/buổi`}>
+                              {sub.subject} - {sub.teacher}
+                            </span>
+                          ))
                         : <span style={{ color: 'var(--text-muted)' }}>Chưa chọn</span>
                       }
                     </div>
@@ -127,7 +155,7 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
                   <td>{s.school || '---'}</td>
                   <td>{s.referrer || '---'}</td>
                   <td><span style={{ fontSize: '0.825rem', fontWeight: 500 }}>{schedule}</span></td>
-                  <td>{formatCurrency(s.monthlyFee || 0)}</td>
+                  <td><strong style={{ color: 'var(--primary)' }}>{formatCurrency(totalMonthlyFee)}</strong></td>
                   <td>
                     {s.status === 'official'
                       ? <span className="badge badge-official"><CheckCircle size={13} /> Chính thức</span>
@@ -150,8 +178,36 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
                 </tr>
               );
             })}
+            
+            {loading && Array.from({ length: 3 }).map((_, idx) => (
+              <tr key={`skeleton-${idx}`}>
+                <td><div className="skeleton-box" style={{ width: '20px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td>
+                  <div className="skeleton-box" style={{ width: '120px', height: '20px', borderRadius: '4px', marginBottom: '4px' }}></div>
+                  <div className="skeleton-box" style={{ width: '80px', height: '14px', borderRadius: '4px' }}></div>
+                </td>
+                <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '150px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '60px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+              </tr>
+            ))}
           </tbody>
         </table>
+        
+        {hasMore && !loading && (
+          <div style={{ textAlign: 'center', padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <button className="btn btn-outline" onClick={loadMore}>
+              <Loader2 size={16} style={{ marginRight: '6px' }} />
+              Tải thêm học sinh...
+            </button>
+          </div>
+        )}
       </div>
 
       {filtered.length === 0 && (

@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useStudent } from '../../context/StudentContext';
+import { useTuition } from '../../context/TuitionContext';
+import { useUI } from '../../context/UIContext';
 import { formatCurrency, formatDate } from '../../utils/storage';
 import PaymentModal from './PaymentModal';
 import ReceiptModal from './ReceiptModal';
@@ -17,7 +19,9 @@ function getMonthOptions() {
 }
 
 export default function TuitionPage() {
-  const { students, tuition, syncMonth, showToast, refreshKey } = useApp();
+  const { students } = useStudent();
+  const { tuition, syncMonth } = useTuition();
+  const { showToast } = useUI();
 
   const today = new Date();
   const defaultMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -32,7 +36,7 @@ export default function TuitionPage() {
   // Sync tuition records when month changes
   useMemo(() => {
     syncMonth(currentMonth);
-  }, [currentMonth, students.length, refreshKey]);
+  }, [currentMonth, students.length, syncMonth]);
 
   const records = useMemo(() => tuition.filter(t => t.month === currentMonth), [currentMonth, tuition]);
 

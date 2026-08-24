@@ -86,8 +86,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Lê Quý Đôn',
     referrer: 'Cô Lan (GV Toán)',
     subjects: [
-      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Anh 9', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[0] },
+      { subject: 'Anh 9', teacher: INITIAL_TEACHERS[1] }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 1600000,
@@ -103,8 +103,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Giảng Võ',
     referrer: 'Phụ huynh bạn Quân',
     subjects: [
-      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[2] },
+      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[3] }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5', 'Chủ Nhật'],
     monthlyFee: 1800000,
@@ -120,8 +120,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Cầu Giấy',
     referrer: 'Tìm trên Facebook',
     subjects: [
-      { subject: 'Toán 7', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Lý 7', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Toán 7', teacher: INITIAL_TEACHERS[4] },
+      { subject: 'Lý 7', teacher: INITIAL_TEACHERS[0] }
     ],
     scheduleDays: ['Thứ 7', 'Chủ Nhật'],
     monthlyFee: 1500000,
@@ -137,9 +137,9 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Kim Liên',
     referrer: 'Thầy Hưng',
     subjects: [
-      { subject: 'Lý 10', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Hóa 10', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Toán 10', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Lý 10', teacher: INITIAL_TEACHERS[1] },
+      { subject: 'Hóa 10', teacher: INITIAL_TEACHERS[2] },
+      { subject: 'Toán 10', teacher: INITIAL_TEACHERS[3] }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 2400000,
@@ -155,8 +155,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Dịch Vọng',
     referrer: 'Mẹ bạn Ánh giới thiệu',
     subjects: [
-      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[4] },
+      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[0] }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5'],
     monthlyFee: 1400000,
@@ -172,8 +172,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Trưng Vương',
     referrer: 'Biển quảng cáo',
     subjects: [
-      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[1] },
+      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[2] }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 6'],
     monthlyFee: 1200000,
@@ -189,8 +189,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Ngô Sĩ Liên',
     referrer: 'Bác Mai',
     subjects: [
-      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Văn 9', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[3] },
+      { subject: 'Văn 9', teacher: INITIAL_TEACHERS[4] }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5', 'Thứ 7'],
     monthlyFee: 1700000,
@@ -206,8 +206,8 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Chu Văn An',
     referrer: 'Anh Hoàng (Cựu học sinh)',
     subjects: [
-      { subject: 'Lý 11', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Toán 11', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Lý 11', teacher: INITIAL_TEACHERS[0] },
+      { subject: 'Toán 11', teacher: INITIAL_TEACHERS[1] }
     ],
     scheduleDays: ['Thứ 4', 'Chủ Nhật'],
     monthlyFee: 1600000,
@@ -223,9 +223,9 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Phan Đình Phùng',
     referrer: 'Cô Hoa (GV Hóa)',
     subjects: [
-      { subject: 'Hóa 12', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Toán 12', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Lý 12', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Hóa 12', teacher: INITIAL_TEACHERS[2] },
+      { subject: 'Toán 12', teacher: INITIAL_TEACHERS[3] },
+      { subject: 'Lý 12', teacher: INITIAL_TEACHERS[4] }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 2700000,
@@ -241,9 +241,9 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Nghĩa Tân',
     referrer: 'Hàng xóm giới thiệu',
     subjects: [
-      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Văn 6', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] },
-      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[Math.floor(Math.random() * INITIAL_TEACHERS.length)] }
+      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[0] },
+      { subject: 'Văn 6', teacher: INITIAL_TEACHERS[1] },
+      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[2] }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5', 'Thứ 7'],
     monthlyFee: 1800000,

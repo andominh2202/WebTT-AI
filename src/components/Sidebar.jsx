@@ -1,4 +1,9 @@
-import { useApp } from '../context/AppContext';
+import { NavLink } from 'react-router-dom';
+import { useUI } from "../context/UIContext";
+import { useAuth } from "../context/AuthContext";
+import { useSettings } from "../context/SettingsContext";
+import { useStudent } from "../context/StudentContext";
+import { useTuition } from "../context/TuitionContext";
 import { LayoutDashboard, Users, Receipt, BarChart3, Settings, Sun, Moon, GraduationCap, LogOut } from 'lucide-react';
 
 const navItems = [
@@ -6,16 +11,13 @@ const navItems = [
   { id: 'students', label: 'Danh sách học sinh', icon: Users },
   { id: 'tuition', label: 'Học phí theo tháng', icon: Receipt },
   { id: 'reports', label: 'Báo cáo doanh thu', icon: BarChart3 },
+  { id: 'teacherFees', label: 'Bảng giá học phí', icon: Receipt },
   { id: 'settings', label: 'Cài đặt & Dữ liệu', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { currentTab, switchTab, theme, toggleTheme, currentUser, logout } = useApp();
-
-  const handleNav = (tabId) => {
-    switchTab(tabId);
-    if (onClose) onClose();
-  };
+  const { theme, toggleTheme } = useUI();
+  const { currentUser, logout } = useAuth();
 
   const mainNavItems = navItems.slice(0, 4);
   const systemNavItems = currentUser?.role === 'admin' ? navItems.slice(4) : [];
@@ -35,14 +37,15 @@ export default function Sidebar({ isOpen, onClose }) {
         {mainNavItems.map(item => {
           const Icon = item.icon;
           return (
-            <button
+            <NavLink
               key={item.id}
-              className={`nav-item ${currentTab === item.id ? 'active' : ''}`}
-              onClick={() => handleNav(item.id)}
+              to={`/${item.id === 'teacherFees' ? 'teacher-fees' : item.id}`}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => onClose && onClose()}
             >
               <Icon size={20} />
               <span>{item.label}</span>
-            </button>
+            </NavLink>
           );
         })}
 
@@ -52,14 +55,15 @@ export default function Sidebar({ isOpen, onClose }) {
             {systemNavItems.map(item => {
               const Icon = item.icon;
               return (
-                <button
+                <NavLink
                   key={item.id}
-                  className={`nav-item ${currentTab === item.id ? 'active' : ''}`}
-                  onClick={() => handleNav(item.id)}
+                  to={`/${item.id === 'teacherFees' ? 'teacher-fees' : item.id}`}
+                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => onClose && onClose()}
                 >
                   <Icon size={20} />
                   <span>{item.label}</span>
-                </button>
+                </NavLink>
               );
             })}
           </>

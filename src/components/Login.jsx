@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useUI } from "../context/UIContext";
+import { useAuth } from "../context/AuthContext";
+import { useSettings } from "../context/SettingsContext";
+import { useStudent } from "../context/StudentContext";
+import { useTuition } from "../context/TuitionContext";
 import { GraduationCap, Lock, User, LogIn } from 'lucide-react';
 
 export default function Login() {
-  const { login } = useApp();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

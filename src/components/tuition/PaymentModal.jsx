@@ -1,10 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { calculateTuitionForMonth } from '../../utils/tuitionCalculator';
 import { X, Check } from 'lucide-react';
 
 export default function PaymentModal({ isOpen, onClose, studentId, currentMonth }) {
-  const { students, tuition, saveTuition, showToast } = useApp();
+  const { students } = useStudent();
+  const { tuition, saveTuition } = useTuition();
+  const { showToast } = useUI();
 
   const data = useMemo(() => {
     if (!studentId || !currentMonth) return null;
@@ -19,6 +25,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
   const [paymentMethod, setPaymentMethod] = useState('Chuyển khoản');
   const [notes, setNotes] = useState('');
   const [studentName, setStudentName] = useState('');
+  const [subjectBreakdown, setSubjectBreakdown] = useState([]);
 
   useEffect(() => {
     if (!isOpen || !data?.student) return;
@@ -31,6 +38,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
       setPaymentDate(existing.paymentDate || new Date().toISOString().split('T')[0]);
       setPaymentMethod(existing.paymentMethod || 'Chuyển khoản');
       setNotes(existing.notes || '');
+      setSubjectBreakdown(existing.subjectBreakdown || []);
     } else {
       const calcResult = calculateTuitionForMonth(student, currentMonth);
       setFeeAmount(calcResult.feeAmount);
@@ -38,6 +46,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentMethod('Chuyển khoản');
       setNotes(calcResult.notes || '');
+      setSubjectBreakdown(calcResult.subjectBreakdown || []);
     }
   }, [isOpen, data, currentMonth]);
 
@@ -63,6 +72,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
       paymentDate: paid > 0 ? paymentDate : '',
       paymentMethod: paid > 0 ? paymentMethod : '',
       notes,
+      subjectBreakdown
     });
 
     showToast('Thành công', 'Đã ghi nhận thông tin đóng học phí!', 'success');
@@ -85,8 +95,25 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
             </div>
 
             <div className="form-grid">
+              {subjectBreakdown.length > 0 && (
+                <div className="form-group full-width">
+                  <label>Chi tiết các môn</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                    {subjectBreakdown.map((s, idx) => (
+                      <div key={idx} style={{ padding: '0.75rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                          <strong style={{ color: 'var(--primary)' }}>{s.subject} ({s.teacher})</strong>
+                          <span style={{ fontWeight: 600 }}>{Number(s.feeAmount).toLocaleString('vi-VN')}đ</span>
+                        </div>
+                        <div style={{ color: 'var(--text-secondary)' }}>{s.notes}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="form-group">
-                <label>Học phí quy định (VNĐ)</label>
+                <label>Tổng Học phí quy định (VNĐ)</label>
                 <input type="number" className="form-control" value={feeAmount} readOnly style={{ opacity: 0.8 }} />
               </div>
               <div className="form-group">

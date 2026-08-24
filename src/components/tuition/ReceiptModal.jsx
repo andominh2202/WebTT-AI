@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate } from '../../utils/storage';
 import { X, Printer } from 'lucide-react';
 
 export default function ReceiptModal({ isOpen, onClose, studentId, currentMonth }) {
-  const { students, tuition } = useApp();
+  const { students } = useStudent();
+  const { tuition } = useTuition();
 
   const data = useMemo(() => {
     if (!studentId || !currentMonth) return null;

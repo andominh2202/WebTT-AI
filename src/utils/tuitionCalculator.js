@@ -35,60 +35,75 @@ export function isHoliday(date) {
 
 // Tính tiền học phí thực tế cho 1 tháng
 export function calculateTuitionForMonth(student, monthStr) {
-  if (!student || !student.scheduleDays || student.scheduleDays.length === 0) {
-    return { feeAmount: student?.monthlyFee || 0, notes: 'Không có lịch học để tính toán.' };
+  if (!student || !student.subjects || student.subjects.length === 0) {
+    return { feeAmount: student?.monthlyFee || 0, notes: 'Không có môn học nào để tính toán.', subjectBreakdown: [] };
   }
 
   const [year, month] = monthStr.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
   
-  // Ánh xạ mảng "Thứ 2", "Thứ 3"... sang số [1, 2, ...]
-  const targetDays = student.scheduleDays.map(d => DAY_MAP[d]);
+  let totalFeeAmount = 0;
+  let totalExpected = 0;
+  let totalHoliday = 0;
+  let totalActual = 0;
+  const breakdown = [];
 
-  let expectedLessons = 0;
-  let holidayLessons = 0;
-  let actualLessons = 0;
+  student.subjects.forEach(sub => {
+    const isG12 = sub.subject && sub.subject.includes('12');
+    const targetDays = (sub.scheduleDays || []).map(d => DAY_MAP[d]).filter(d => d !== undefined);
+    
+    let expectedLessons = 0;
+    let holidayLessons = 0;
+    let actualLessons = 0;
 
-  const isG12 = isGrade12(student);
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    const d = new Date(year, month - 1, i);
-    if (targetDays.includes(d.getDay())) {
-      expectedLessons++;
-      
-      if (isHoliday(d) && !isG12) {
-        holidayLessons++;
-      } else {
-        actualLessons++;
+    if (targetDays.length > 0) {
+      for (let i = 1; i <= daysInMonth; i++) {
+        const d = new Date(year, month - 1, i);
+        if (targetDays.includes(d.getDay())) {
+          expectedLessons++;
+          if (isHoliday(d) && !isG12) {
+            holidayLessons++;
+          } else {
+            actualLessons++;
+          }
+        }
       }
     }
-  }
 
-  // Tính tiền 1 buổi
-  // Nếu học sinh chưa được lưu feePerLesson (dữ liệu cũ), tự động tính bằng: monthlyFee / (số buổi 1 tuần * 4 tuần)
-  let feePerLesson = student.feePerLesson;
-  if (!feePerLesson) {
-    feePerLesson = (student.monthlyFee || 0) / (student.scheduleDays.length * 4);
-  }
+    const feePerLesson = sub.feePerLesson || 0;
+    const subFeeAmount = actualLessons * feePerLesson;
+    
+    let subNotes = `Tháng này có ${expectedLessons} buổi.`;
+    if (holidayLessons > 0) {
+      subNotes += ` Nghỉ lễ ${holidayLessons} buổi.`;
+    }
+    subNotes += ` Thực học: ${actualLessons} buổi.`;
 
-  const finalFeeAmount = actualLessons * feePerLesson;
-  
-  let notes = `Tháng này có ${expectedLessons} buổi.`;
-  if (holidayLessons > 0) {
-    notes += ` Nghỉ lễ ${holidayLessons} buổi.`;
-  }
-  notes += ` Thực học: ${actualLessons} buổi.`;
+    totalFeeAmount += subFeeAmount;
+    totalExpected += expectedLessons;
+    totalHoliday += holidayLessons;
+    totalActual += actualLessons;
 
-  if (isG12 && expectedLessons !== actualLessons + holidayLessons) {
-     // this condition is just for safety, it shouldn't happen unless holiday logic is bypassed
-  }
+    breakdown.push({
+      subject: sub.subject,
+      teacher: sub.teacher,
+      expectedLessons,
+      holidayLessons,
+      actualLessons,
+      feePerLesson,
+      feeAmount: subFeeAmount,
+      notes: subNotes
+    });
+  });
+
+  const overallNotes = `Tổng cộng: ${totalExpected} buổi. Nghỉ lễ: ${totalHoliday} buổi. Thực học: ${totalActual} buổi.`;
 
   return {
-    feeAmount: Math.round(finalFeeAmount),
-    expectedLessons,
-    holidayLessons,
-    actualLessons,
-    feePerLesson: Math.round(feePerLesson),
-    notes
+    feeAmount: Math.round(totalFeeAmount),
+    expectedLessons: totalExpected,
+    holidayLessons: totalHoliday,
+    actualLessons: totalActual,
+    notes: overallNotes,
+    subjectBreakdown: breakdown
   };
 }

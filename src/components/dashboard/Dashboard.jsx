@@ -1,13 +1,20 @@
 import { useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useNavigate } from 'react-router-dom';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency } from '../../utils/storage';
-import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChart2, FileSpreadsheet, CheckCircle, Clock } from 'lucide-react';
+import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChart2, FileSpreadsheet, CheckCircle, Clock, Receipt, BarChart3 } from 'lucide-react';
 
 export default function Dashboard({ onAddStudent, onExportCSV }) {
-  const { students, tuition, switchTab } = useApp();
+  const { students, totalCount } = useStudent();
+  const { tuition } = useTuition();
+  const navigate = useNavigate();
 
   const stats = useMemo(() => {
-    const total = students.length;
+    const total = totalCount || students.length;
     const official = students.filter(s => s.status === 'official').length;
     const trial = students.filter(s => s.status === 'trial').length;
 
@@ -69,7 +76,7 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-header">
             <div className="card-title"><UserCheck size={18} /> Học sinh mới đăng ký gần đây</div>
-            <button className="btn btn-outline btn-sm" onClick={() => switchTab('students')}>Xem tất cả</button>
+            <button className="btn btn-outline btn-sm" onClick={() => navigate('/students')}>Xem tất cả</button>
           </div>
           <div className="table-responsive">
             <table className="custom-table">
@@ -107,11 +114,11 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
             <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
               <UserPlus size={18} /> Thêm học sinh mới
             </button>
-            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => switchTab('tuition')}>
-              <CreditCard size={18} /> Ghi nhận thu học phí tháng
+            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
+              <Receipt size={16} /> Phiếu thu & Công nợ
             </button>
-            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => switchTab('reports')}>
-              <BarChart2 size={18} /> Xem báo cáo biểu đồ doanh thu
+            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/reports')}>
+              <BarChart3 size={16} /> Báo cáo thống kê
             </button>
             <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={onExportCSV}>
               <FileSpreadsheet size={18} /> Xuất danh sách học phí ra CSV

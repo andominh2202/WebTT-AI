@@ -1,8 +1,13 @@
-import { useApp } from '../../context/AppContext';
+import { useUI } from "../../context/UIContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useStudent } from "../../context/StudentContext";
+import { useTuition } from "../../context/TuitionContext";
 import { Database, DownloadCloud, UploadCloud, Download, Upload, RotateCcw } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { exportBackup, importBackup, resetData } = useApp();
+  const { exportBackup, importBackup } = useSettings();
+  const resetData = () => {}; // disabled
 
   const handleImport = (e) => {
     const file = e.target.files[0];

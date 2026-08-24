@@ -1,4 +1,8 @@
-import { useApp } from '../context/AppContext';
+import { useLocation } from 'react-router-dom';
+import { useUI } from "../context/UIContext";
+import { useSettings } from "../context/SettingsContext";
+import { useStudent } from "../context/StudentContext";
+import { useTuition } from "../context/TuitionContext";
 import { Menu, UserPlus } from 'lucide-react';
 
 const titleMap = {
@@ -6,12 +10,15 @@ const titleMap = {
   students: { title: 'Quản lý Học sinh', sub: 'Danh sách, tìm kiếm, thêm mới và theo dõi học sinh' },
   tuition: { title: 'Quản lý Học phí theo tháng', sub: 'Theo dõi tình trạng nộp tiền, công nợ và in phiếu thu' },
   reports: { title: 'Báo cáo & Thống kê doanh thu', sub: 'Biểu đồ doanh thu, cơ cấu học sinh và hiệu quả theo môn' },
+  teacherFees: { title: 'Bảng giá học phí', sub: 'Cài đặt học phí theo buổi và theo tháng cho từng giáo viên' },
   settings: { title: 'Cài đặt & Dữ liệu', sub: 'Sao lưu, phục hồi dữ liệu và khôi phục cài đặt gốc' }
 };
 
 export default function Header({ onToggleSidebar, onAddStudent }) {
-  const { currentTab } = useApp();
-  const info = titleMap[currentTab] || titleMap.dashboard;
+  const location = useLocation();
+  const path = location.pathname.replace('/', '') || 'dashboard';
+  const tabId = path === 'teacher-fees' ? 'teacherFees' : path;
+  const info = titleMap[tabId] || titleMap.dashboard;
 
   return (
     <header className="top-header">

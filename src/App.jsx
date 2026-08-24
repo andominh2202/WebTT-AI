@@ -1,21 +1,27 @@
-  import { useState, useCallback, useRef, useEffect } from 'react';
-import { useApp } from './context/AppContext';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from "./context/AuthContext";
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Toast from './components/Toast';
 import Login from './components/Login';
-import Dashboard from './components/dashboard/Dashboard';
-import StudentList from './components/students/StudentList';
-import StudentModal from './components/students/StudentModal';
-import StudentDetailModal from './components/students/StudentDetailModal';
-import TuitionPage from './components/tuition/TuitionPage';
-import ReportsPage from './components/reports/ReportsPage';
-import SettingsPage from './components/settings/SettingsPage';
+import GlobalLoading from './components/GlobalLoading';
 import './styles/style.css';
 
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+const StudentList = lazy(() => import('./components/students/StudentList'));
+const TuitionPage = lazy(() => import('./components/tuition/TuitionPage'));
+const ReportsPage = lazy(() => import('./components/reports/ReportsPage'));
+const SettingsPage = lazy(() => import('./components/settings/SettingsPage'));
+const TeacherFeesPage = lazy(() => import('./components/tuition/TeacherFeesPage'));
+const StudentModal = lazy(() => import('./components/students/StudentModal'));
+const StudentDetailModal = lazy(() => import('./components/students/StudentDetailModal'));
+
 export default function App() {
-  const { currentTab, currentUser, switchTab } = useApp();
+  const { currentUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Student Modal state
   const [studentModalOpen, setStudentModalOpen] = useState(false);
@@ -24,15 +30,12 @@ export default function App() {
   // Student Detail Modal state
   const [detailStudentId, setDetailStudentId] = useState(null);
 
-  // CSV export ref (to call from Dashboard)
-  const tuitionRef = useRef(null);
-
   // Redirect user role if they somehow enter restricted settings tab
   useEffect(() => {
-    if (currentUser && currentUser.role === 'user' && currentTab === 'settings') {
-      switchTab('dashboard');
+    if (currentUser && currentUser.role === 'user' && location.pathname === '/settings') {
+      navigate('/dashboard', { replace: true });
     }
-  }, [currentUser, currentTab, switchTab]);
+  }, [currentUser, location, navigate]);
 
   const handleAddStudent = useCallback(() => {
     setEditStudentId(null);
@@ -49,8 +52,8 @@ export default function App() {
   }, []);
 
   const handleExportCSV = useCallback(() => {
-    switchTab('tuition');
-  }, [switchTab]);
+    navigate('/tuition');
+  }, [navigate]);
 
   if (!currentUser) {
     return (
@@ -60,23 +63,6 @@ export default function App() {
       </>
     );
   }
-
-  const renderContent = () => {
-    switch (currentTab) {
-      case 'dashboard':
-        return <Dashboard onAddStudent={handleAddStudent} onExportCSV={handleExportCSV} />;
-      case 'students':
-        return <StudentList onAddStudent={handleAddStudent} onEditStudent={handleEditStudent} onViewStudent={handleViewStudent} />;
-      case 'tuition':
-        return <TuitionPage />;
-      case 'reports':
-        return <ReportsPage />;
-      case 'settings':
-        return <SettingsPage />;
-      default:
-        return <Dashboard onAddStudent={handleAddStudent} />;
-    }
-  };
 
   return (
     <div className="app-container">
@@ -88,22 +74,34 @@ export default function App() {
           onAddStudent={handleAddStudent}
         />
         <main className="content-body">
-          {renderContent()}
+          <Suspense fallback={<GlobalLoading />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard onAddStudent={handleAddStudent} onExportCSV={handleExportCSV} />} />
+              <Route path="/students" element={<StudentList onAddStudent={handleAddStudent} onEditStudent={handleEditStudent} onViewStudent={handleViewStudent} />} />
+              <Route path="/tuition" element={<TuitionPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/teacher-fees" element={<TeacherFeesPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
 
-      {/* Modals */}
-      <StudentModal
-        isOpen={studentModalOpen}
-        onClose={() => { setStudentModalOpen(false); setEditStudentId(null); }}
-        editStudentId={editStudentId}
-      />
+      <Suspense fallback={null}>
+        <StudentModal
+          isOpen={studentModalOpen}
+          onClose={() => { setStudentModalOpen(false); setEditStudentId(null); }}
+          editStudentId={editStudentId}
+        />
 
-      <StudentDetailModal
-        isOpen={!!detailStudentId}
-        onClose={() => setDetailStudentId(null)}
-        studentId={detailStudentId}
-      />
+        <StudentDetailModal
+          isOpen={!!detailStudentId}
+          onClose={() => setDetailStudentId(null)}
+          studentId={detailStudentId}
+        />
+      </Suspense>
 
       {/* Toast Notifications */}
       <Toast />

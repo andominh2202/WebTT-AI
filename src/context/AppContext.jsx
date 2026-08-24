@@ -14,6 +14,7 @@ export function AppProvider({ children }) {
   const [tuition, setTuition] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [teacherFees, setTeacherFees] = useState({});
   const [toasts, setToasts] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -28,10 +29,12 @@ export function AppProvider({ children }) {
   useEffect(() => {
     let unsubs = [];
     const init = async () => {
+      await S.migrateSubjectData();
       await S.initStorage();
       
       unsubs.push(S.subscribeToCollection('students', setStudents));
       unsubs.push(S.subscribeToCollection('tuition', setTuition));
+      unsubs.push(S.subscribeToSettings('teacherFees', setTeacherFees));
       unsubs.push(S.subscribeToCollection('subjects', setSubjects));
       unsubs.push(S.subscribeToCollection('teachers', setTeachers));
     };
@@ -116,10 +119,20 @@ export function AppProvider({ children }) {
     await S.syncMonthlyTuition(month, students, tuition);
   }, [students, tuition]);
 
+  const saveTeacherFees = useCallback(async (newFees) => {
+    try {
+      await S.saveSettings('teacherFees', newFees);
+      showToast('Thành công', 'Đã lưu cài đặt học phí giáo viên', 'success');
+    } catch (e) {
+      showToast('Lỗi', 'Không thể lưu cài đặt', 'error');
+    }
+  }, [showToast]);
+
   const value = {
     currentTab, switchTab,
     theme, toggleTheme,
     students, tuition, subjects, teachers, refreshKey,
+    teacherFees, saveTeacherFees,
     toasts, showToast,
     addStudent: handleAddStudent,
     updateStudent: handleUpdateStudent,
@@ -127,8 +140,23 @@ export function AppProvider({ children }) {
     addSubject: handleAddSubject,
     saveTuition: handleSaveTuition,
     syncMonth: handleSyncMonth,
-    exportBackup: () => {}, // disabled
-    importBackup: () => {}, // disabled
+    exportBackup: async () => {
+      try {
+        await S.exportDatabase();
+        showToast('Thành công', 'Đã tải xuống file sao lưu', 'success');
+      } catch (err) {
+        showToast('Lỗi', 'Không thể sao lưu dữ liệu', 'danger');
+      }
+    },
+    importBackup: async (jsonData) => {
+      try {
+        await S.importDatabase(jsonData);
+        showToast('Thành công', 'Đã khôi phục dữ liệu từ file', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err) {
+        showToast('Lỗi', 'File sao lưu không hợp lệ hoặc lỗi kết nối', 'danger');
+      }
+    },
     resetData: () => {}, // disabled
     reload: () => {},
     currentUser, login, logout

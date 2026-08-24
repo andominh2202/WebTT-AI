@@ -1,4 +1,8 @@
-import { useApp } from '../context/AppContext';
+import { useUI } from "../context/UIContext";
+import { useAuth } from "../context/AuthContext";
+import { useSettings } from "../context/SettingsContext";
+import { useStudent } from "../context/StudentContext";
+import { useTuition } from "../context/TuitionContext";
 import { CheckCircle, AlertOctagon, AlertTriangle, Info } from 'lucide-react';
 
 const iconMap = {
@@ -9,7 +13,7 @@ const iconMap = {
 };
 
 export default function Toast() {
-  const { toasts } = useApp();
+  const { toasts } = useUI();
 
   return (
     <div className="toast-container" id="toast-container">
