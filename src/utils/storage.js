@@ -92,30 +92,30 @@ export async function authenticateUser(emailOrUsername, password) {
   
   if (!userData) {
     try {
-      // Must query specific document or where clause if security rules allow reading own doc
       const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
       if (docSnap.exists()) {
         userData = docSnap.data();
       } else {
-        // Find by email in case uid is different or records were migrated
         const usersSnap = await getDocs(query(collection(db, COLLECTIONS.USERS), where('email', '==', user.email)));
         if (!usersSnap.empty) {
           userData = usersSnap.docs[0].data();
+        } else {
+          throw new Error("Tài khoản chưa được phân quyền hoặc không tồn tại trong hệ thống (Profile Not Found).");
         }
       }
     } catch (err) {
       console.error("Lỗi lấy thông tin user post-login:", err);
-      // Security fix: Nếu lỗi do permission, vẫn tiếp tục nhưng gán default role thấp nhất, hoặc có thể chọn vứt luôn session.
-      // Dù sao với role 'user', rules trên server đã chặn rồi.
+      // Security fix: Không giả định role, quăng lỗi ngay lập tức
+      throw new Error("Không thể xác thực thông tin quyền (Profile Fetch Error). Vui lòng thử lại.");
     }
   }
 
   return {
     uid: user.uid,
     email: user.email,
-    username: userData?.username || emailOrUsername,
-    role: userData?.role || 'user',
-    displayName: userData?.displayName || emailOrUsername.split('@')[0]
+    username: userData.username || emailOrUsername,
+    role: userData.role,
+    displayName: userData.displayName || emailOrUsername.split('@')[0]
   };
 }
 
@@ -195,11 +195,46 @@ export async function deleteStudent(id) {
   await batch.commit();
 }
 
+function validateAndWhitelistTuition(record) {
+  const feeAmount = typeof record.feeAmount === 'number' ? record.feeAmount : Number(record.feeAmount);
+  const paidAmount = typeof record.paidAmount === 'number' ? record.paidAmount : Number(record.paidAmount);
+
+  if (!Number.isFinite(feeAmount) || feeAmount < 0) {
+    throw new Error('feeAmount phải là số hợp lệ và >= 0');
+  }
+  if (!Number.isFinite(paidAmount) || paidAmount < 0) {
+    throw new Error('paidAmount phải là số hợp lệ và >= 0');
+  }
+
+  const breakdown = Array.isArray(record.subjectBreakdown) ? record.subjectBreakdown.map(sub => ({
+    subject: String(sub.subject || ''),
+    teacher: String(sub.teacher || ''),
+    expectedLessons: Number(sub.expectedLessons || 0),
+    holidayLessons: Number(sub.holidayLessons || 0),
+    actualLessons: Number(sub.actualLessons || 0),
+    feePerLesson: Number(sub.feePerLesson || 0),
+    feeAmount: Number(sub.feeAmount || 0),
+    notes: String(sub.notes || '')
+  })) : [];
+
+  return {
+    studentId: String(record.studentId || ''),
+    month: String(record.month || ''),
+    feeAmount,
+    paidAmount,
+    status: record.status === 'paid' || record.status === 'partial' || record.status === 'unpaid' ? record.status : 'unpaid',
+    paymentDate: String(record.paymentDate || ''),
+    paymentMethod: String(record.paymentMethod || ''),
+    notes: String(record.notes || ''),
+    subjectBreakdown: breakdown
+  };
+}
+
 export async function saveTuitionRecord(record) {
   if (!record.id) {
     record.id = `TUI-${record.month.replace('-', '')}-${Date.now().toString().slice(-4)}`;
   }
-  const { id, ...dataToSave } = record;
+  const dataToSave = validateAndWhitelistTuition(record);
   await setDoc(doc(db, COLLECTIONS.TUITION, record.id), dataToSave);
   return record;
 }
@@ -375,8 +410,33 @@ export async function importDatabase(jsonData) {
         for (const item of data[coll]) {
           const { id, ...rest } = item;
           if (!id) continue;
+          
+          let sanitized = {};
+          if (coll === COLLECTIONS.STUDENTS) {
+            sanitized = validateAndWhitelistStudent(rest, false);
+          } else if (coll === COLLECTIONS.TUITION) {
+            sanitized = validateAndWhitelistTuition(rest);
+          } else if (coll === COLLECTIONS.USERS) {
+            // Admin import users: whitelist to prevent dangerous fields injected in JSON
+            sanitized = {
+              email: String(rest.email || ''),
+              displayName: String(rest.displayName || ''),
+              role: (rest.role === 'admin' || rest.role === 'staff') ? rest.role : 'user',
+              username: String(rest.username || '')
+            };
+          } else {
+            // For settings, teachers, subjects: just copy basic string properties or specific schema
+            // If they are objects, we shallow clone safely.
+            // Simplified safe copy:
+            for (const key of Object.keys(rest)) {
+              if (typeof rest[key] === 'string' || typeof rest[key] === 'number' || typeof rest[key] === 'boolean' || Array.isArray(rest[key])) {
+                sanitized[key] = rest[key];
+              }
+            }
+          }
+
           const ref = doc(db, coll, id);
-          currentBatch.set(ref, rest);
+          currentBatch.set(ref, sanitized);
           count++;
           
           if (count >= 490) { // Firestore batch limit is 500

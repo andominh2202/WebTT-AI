@@ -15,7 +15,7 @@ export function StudentProvider({ children }) {
 
   useEffect(() => {
     S.getStudentsCount().then(setTotalCount);
-  }, [students]);
+  }, []); // Only fetch count initially
 
   useEffect(() => {
     setLoading(true);
@@ -34,6 +34,7 @@ export function StudentProvider({ children }) {
 
   const addStudent = useCallback(async (data) => {
     await S.addStudent(data);
+    setTotalCount(prev => prev + 1);
   }, []);
 
   const updateStudent = useCallback(async (data) => {
@@ -42,6 +43,7 @@ export function StudentProvider({ children }) {
 
   const deleteStudent = useCallback(async (id) => {
     await S.deleteStudent(id);
+    setTotalCount(prev => Math.max(0, prev - 1));
   }, []);
 
   return (

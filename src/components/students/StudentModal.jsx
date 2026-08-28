@@ -101,6 +101,8 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
     setSelTeacher('');
   }, [isOpen, editStudentId]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   if (!isOpen) return null;
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -186,7 +188,6 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
     });
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -33,11 +33,12 @@ service cloud.firestore {
     
     match /tuition/{document=**} {
       allow read: if isAuth();
-      allow delete: if isAdmin();
-      // Đảm bảo không truyền lên feeAmount âm
+      // Đảm bảo không truyền lên feeAmount âm và chặn Mass Assignment
       allow create, update: if isAuth() 
+        && request.resource.data.keys().hasOnly(['studentId', 'month', 'feeAmount', 'paidAmount', 'status', 'paymentDate', 'paymentMethod', 'notes', 'subjectBreakdown'])
         && (!request.resource.data.keys().hasAny(['feeAmount']) || isValidAmount(request.resource.data.feeAmount))
         && (!request.resource.data.keys().hasAny(['paidAmount']) || isValidAmount(request.resource.data.paidAmount));
+      allow delete: if isAdmin();
     }
 
     match /settings/{document=**} {
