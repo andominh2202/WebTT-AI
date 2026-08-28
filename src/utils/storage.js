@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch, deleteDoc, query, where, limit, startAfter, orderBy, getCountFromServer } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch, deleteDoc, query, where, limit, startAfter, orderBy, getCountFromServer, documentId } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { db, auth } from '../config/firebase';
 import { INITIAL_STUDENTS, INITIAL_TUITION_RECORDS, INITIAL_SUBJECTS, INITIAL_TEACHERS, CLASS_MAP } from '../data/mockData';
@@ -51,11 +51,13 @@ export async function initStorage() {
     const batch = writeBatch(db);
     INITIAL_STUDENTS.forEach(s => {
       const docRef = doc(collection(db, COLLECTIONS.STUDENTS), s.id);
-      batch.set(docRef, s);
+      const { id, ...dataToSave } = s;
+      batch.set(docRef, dataToSave);
     });
     INITIAL_TUITION_RECORDS.forEach(t => {
       const docRef = doc(collection(db, COLLECTIONS.TUITION), t.id);
-      batch.set(docRef, t);
+      const { id, ...dataToSave } = t;
+      batch.set(docRef, dataToSave);
     });
     INITIAL_SUBJECTS.forEach((sub, idx) => {
       const docRef = doc(collection(db, COLLECTIONS.SUBJECTS), `sub_${idx}`);
@@ -141,12 +143,14 @@ export async function addStudent(student) {
     student.id = `STU-${String(maxIdNum + 1).padStart(3, '0')}`;
   }
   student.createdAt = student.createdAt || new Date().toISOString().split('T')[0];
-  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), student);
+  const { id, ...dataToSave } = student;
+  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), dataToSave);
   return student;
 }
 
 export async function updateStudent(student) {
-  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), student, { merge: true });
+  const { id, ...dataToSave } = student;
+  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), dataToSave, { merge: true });
   return student;
 }
 
@@ -166,7 +170,8 @@ export async function saveTuitionRecord(record) {
   if (!record.id) {
     record.id = `TUI-${record.month.replace('-', '')}-${Date.now().toString().slice(-4)}`;
   }
-  await setDoc(doc(db, COLLECTIONS.TUITION, record.id), record);
+  const { id, ...dataToSave } = record;
+  await setDoc(doc(db, COLLECTIONS.TUITION, record.id), dataToSave);
   return record;
 }
 
@@ -180,8 +185,8 @@ export async function syncMonthlyTuition(monthStr, students, existingRecords) {
     if (!existingRecords.some(r => r.studentId === student.id && r.month === monthStr)) {
       const calcResult = calculateTuitionForMonth(student, monthStr);
       
+      const docId = `TUI-${monthStr.replace('-', '')}-${student.id}`;
       const newRec = {
-        id: `TUI-${monthStr.replace('-', '')}-${student.id}`,
         studentId: student.id,
         month: monthStr,
         feeAmount: calcResult.feeAmount,
@@ -191,7 +196,7 @@ export async function syncMonthlyTuition(monthStr, students, existingRecords) {
         paymentMethod: '',
         notes: calcResult.notes || ''
       };
-      const docRef = doc(collection(db, COLLECTIONS.TUITION), newRec.id);
+      const docRef = doc(collection(db, COLLECTIONS.TUITION), docId);
       batch.set(docRef, newRec);
       updated = true;
     }
@@ -212,7 +217,7 @@ export function subscribeToCollection(collectionName, callback) {
       if (collectionName === COLLECTIONS.SUBJECTS || collectionName === COLLECTIONS.TEACHERS) {
         return docData.name || doc.id; 
       }
-      return docData;
+      return { id: doc.id, ...docData };
     });
     callback(data);
   });
@@ -222,11 +227,11 @@ export function subscribeToCollection(collectionName, callback) {
 export function subscribeToStudentsPaginated(pageSize, callback) {
   const q = query(
     collection(db, COLLECTIONS.STUDENTS),
-    orderBy('id', 'asc'),
+    orderBy(documentId(), 'asc'),
     limit(pageSize)
   );
   return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(doc => doc.data());
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     callback(data);
   });
 }

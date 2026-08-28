@@ -132,7 +132,6 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
                     <div style={{ fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }} onClick={() => onViewStudent(s.id)}>
                       {s.fullName}
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.id}</span>
                   </td>
                   <td>
                     <a href={`tel:${s.parentPhone}`} className="phone-copy" title="Gọi SĐT">

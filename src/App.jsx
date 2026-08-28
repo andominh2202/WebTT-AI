@@ -18,7 +18,7 @@ const StudentModal = lazy(() => import('./components/students/StudentModal'));
 const StudentDetailModal = lazy(() => import('./components/students/StudentDetailModal'));
 
 export default function App() {
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,6 +54,10 @@ export default function App() {
   const handleExportCSV = useCallback(() => {
     navigate('/tuition');
   }, [navigate]);
+
+  if (isAuthLoading) {
+    return <GlobalLoading />;
+  }
 
   if (!currentUser) {
     return (

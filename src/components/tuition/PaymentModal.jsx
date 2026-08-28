@@ -61,7 +61,8 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
 
     let status = 'unpaid';
     if (paid >= fee && fee > 0) status = 'paid';
-    else if (paid > 0) status = 'partial';
+    else if (fee === 0 && paid === 0) status = 'paid';
+    else if (paid !== 0) status = 'partial';
 
     saveTuition({
       studentId,
@@ -122,7 +123,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
                   <button type="button" className="btn btn-outline btn-sm" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
                     onClick={() => setPaidAmount(feeAmount)}>Đóng đủ</button>
                 </div>
-                <input type="number" className="form-control" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} step="50000" min="0" required />
+                <input type="number" className="form-control" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} step="50000" required />
               </div>
               <div className="form-group">
                 <label>Ngày nộp</label>

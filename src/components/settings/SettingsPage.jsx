@@ -3,11 +3,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
-import { Database, DownloadCloud, UploadCloud, Download, Upload, RotateCcw } from 'lucide-react';
+import { Database, DownloadCloud, UploadCloud, Download, Upload } from 'lucide-react';
 
 export default function SettingsPage() {
   const { exportBackup, importBackup } = useSettings();
-  const resetData = () => {}; // disabled
 
   const handleImport = (e) => {
     const file = e.target.files[0];
@@ -18,11 +17,6 @@ export default function SettingsPage() {
     e.target.value = '';
   };
 
-  const handleReset = () => {
-    if (window.confirm('Bạn có chắc chắn muốn đặt lại dữ liệu mẫu mặc định? Tất cả thay đổi hiện tại sẽ bị thay thế.')) {
-      resetData();
-    }
-  };
 
   return (
     <section>
@@ -55,15 +49,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <strong style={{ color: 'var(--danger-text)' }}>Đặt lại dữ liệu mẫu</strong>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Khôi phục danh sách học sinh và học phí ban đầu</p>
-          </div>
-          <button className="btn btn-danger btn-sm" onClick={handleReset}>
-            <RotateCcw size={16} /> Khôi phục dữ liệu mẫu
-          </button>
-        </div>
+
       </div>
     </section>
   );

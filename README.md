@@ -51,4 +51,4 @@ Thư mục `dist/` sẽ chứa các file tĩnh đã được tối ưu hóa đ�
 Toàn bộ dữ liệu (Học sinh, học phí, cài đặt, giáo viên) có thể được xuất ra dưới dạng file `.json` và nhập lại thông qua giao diện **Cài Đặt** trong ứng dụng.
 
 ## 🤖 AI Powered
-Dự án này sử dụng 100% AI để dựng và phát triển code
+Dự án này sử dụng 100% AI để dựng và phát triển.

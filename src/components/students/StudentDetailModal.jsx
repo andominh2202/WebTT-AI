@@ -34,7 +34,6 @@ export default function StudentDetailModal({ isOpen, onClose, studentId }) {
                 Thông tin cá nhân & liên hệ
               </div>
               <div className="detail-item"><span className="label">Họ và tên</span><span className="val">{student.fullName}</span></div>
-              <div className="detail-item"><span className="label">Mã học sinh</span><span className="val">{student.id}</span></div>
               <div className="detail-item"><span className="label">SĐT phụ huynh</span><span className="val">{student.parentPhone || '---'}</span></div>
               <div className="detail-item"><span className="label">Ngày sinh (Tuổi)</span><span className="val">{student.dob ? `${formatDate(student.dob)} (${calculateAge(student.dob)})` : '---'}</span></div>
               <div className="detail-item"><span className="label">Trường học</span><span className="val">{student.school || '---'}</span></div>

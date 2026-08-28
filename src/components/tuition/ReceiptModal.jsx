@@ -48,8 +48,7 @@ export default function ReceiptModal({ isOpen, onClose, studentId, currentMonth 
               <p>Mã phiếu: <strong>{data.code}</strong> | Ngày lập: {data.dateNow}</p>
             </div>
             <div className="receipt-details">
-              <div className="item"><span>Họ tên học sinh:</span> <strong>{data.studentName}</strong></div>
-              <div className="item"><span>Mã học sinh:</span> <strong>{data.studentId}</strong></div>
+              <div className="item"><span>Họ và tên:</span> <strong>{data.studentName}</strong></div>
               <div className="item"><span>SĐT Phụ huynh:</span> <strong>{data.parentPhone}</strong></div>
               <div className="item"><span>Trường học:</span> <strong>{data.school}</strong></div>
               <div className="item" style={{ gridColumn: '1 / -1' }}><span>Môn học:</span> <strong>{data.subjects}</strong></div>

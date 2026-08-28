@@ -48,7 +48,7 @@ export default function ReportsPage() {
       revenue += (t.paidAmount || 0);
       expected += (t.feeAmount || 0);
       if (t.status === 'paid') paidCount++;
-      if (t.paidAmount > 0) {
+      if (t.paidAmount !== 0) {
         if (t.paymentMethod === 'Tiền mặt') {
           cashRevenue += (t.paidAmount || 0);
         } else {
@@ -86,7 +86,7 @@ export default function ReportsPage() {
     const map = {};
     subjects.forEach(s => map[s] = 0);
     tuition.forEach(t => {
-      if (t.paidAmount > 0) {
+      if (t.paidAmount !== 0) {
         const st = students.find(s => s.id === t.studentId);
         if (st?.subjects?.length > 0) {
           const split = t.paidAmount / st.subjects.length;
@@ -94,8 +94,8 @@ export default function ReportsPage() {
         }
       }
     });
-    const active = Object.keys(map).filter(k => map[k] > 0);
-    const vals = active.map(k => map[k]);
+    const active = Object.keys(map).filter(k => map[k] !== 0);
+    const vals = active.map(k => Math.max(0, map[k]));
     return {
       labels: active.length > 0 ? active : ['Chưa có dữ liệu'],
       datasets: [{ data: active.length > 0 ? vals : [1], backgroundColor: active.length > 0 ? PALETTE.slice(0, active.length) : ['#e2e8f0'], borderWidth: 2, borderColor: '#fff' }]
@@ -106,7 +106,7 @@ export default function ReportsPage() {
   const paymentMethodChartData = useMemo(() => {
     let cash = 0, transfer = 0;
     tuition.forEach(t => {
-      if (t.month.startsWith(String(selectedYear)) && t.paidAmount > 0) {
+      if (t.month.startsWith(String(selectedYear)) && t.paidAmount !== 0) {
         if (t.paymentMethod === 'Tiền mặt') {
           cash += t.paidAmount;
         } else {
@@ -118,7 +118,7 @@ export default function ReportsPage() {
     return {
       labels: hasData ? ['Chuyển khoản', 'Tiền mặt'] : ['Chưa có giao dịch'],
       datasets: [{
-        data: hasData ? [transfer, cash] : [1],
+        data: hasData ? [Math.max(0, transfer), Math.max(0, cash)] : [1],
         backgroundColor: hasData ? ['#4f46e5', '#10b981'] : ['#e2e8f0'],
         borderWidth: 2,
         borderColor: '#fff'
@@ -139,7 +139,7 @@ export default function ReportsPage() {
       let rev = 0;
       enrolled.forEach(st => {
         tuition.filter(t => t.studentId === st.id).forEach(t => {
-          if (t.paidAmount > 0 && st.subjects.length > 0) rev += t.paidAmount / st.subjects.length;
+          if (t.paidAmount !== 0 && st.subjects.length > 0) rev += t.paidAmount / st.subjects.length;
         });
       });
       return { name: sub, count: enrolled.length, revenue: rev };
@@ -323,7 +323,6 @@ export default function ReportsPage() {
                           <td><strong>{idx + 1}</strong></td>
                           <td>
                             <div style={{ fontWeight: 700 }}>{p.studentName}</div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.studentId}</span>
                           </td>
                           <td>{formatDate(p.paymentDate)}</td>
                           <td>

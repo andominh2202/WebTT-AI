@@ -232,24 +232,6 @@ export const INITIAL_STUDENTS = [
     status: 'official',
     notes: 'Ôn thi đại học khối A, mục tiêu 27+',
     createdAt: '2026-01-08'
-  },
-  {
-    id: 'STU-010',
-    fullName: 'Trịnh Đức Anh',
-    parentPhone: '0908333444',
-    dob: '2014-02-15',
-    school: 'THCS Nghĩa Tân',
-    referrer: 'Hàng xóm giới thiệu',
-    subjects: [
-      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[0] },
-      { subject: 'Văn 6', teacher: INITIAL_TEACHERS[1] },
-      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[2] }
-    ],
-    scheduleDays: ['Thứ 3', 'Thứ 5', 'Thứ 7'],
-    monthlyFee: 1800000,
-    status: 'official',
-    notes: 'Mới vào lớp 6, cần kèm sát',
-    createdAt: '2026-05-10'
   }
 ];
 
@@ -264,7 +246,6 @@ export const INITIAL_TUITION_RECORDS = [
   { id: 'TUI-202608-007', studentId: 'STU-007', month: '2026-08', feeAmount: 1700000, paidAmount: 1700000, status: 'paid', paymentDate: '2026-08-08', paymentMethod: 'Chuyển khoản', notes: 'Đã nộp' },
   { id: 'TUI-202608-008', studentId: 'STU-008', month: '2026-08', feeAmount: 1600000, paidAmount: 0, status: 'unpaid', paymentDate: '', paymentMethod: '', notes: 'Chưa đóng' },
   { id: 'TUI-202608-009', studentId: 'STU-009', month: '2026-08', feeAmount: 2700000, paidAmount: 2700000, status: 'paid', paymentDate: '2026-08-04', paymentMethod: 'Chuyển khoản', notes: 'Bố CK qua BIDV' },
-  { id: 'TUI-202608-010', studentId: 'STU-010', month: '2026-08', feeAmount: 1800000, paidAmount: 1800000, status: 'paid', paymentDate: '2026-08-07', paymentMethod: 'Tiền mặt', notes: 'Mẹ đưa trực tiếp' },
 
   // Tháng 07/2026
   { id: 'TUI-202607-001', studentId: 'STU-001', month: '2026-07', feeAmount: 1600000, paidAmount: 1600000, status: 'paid', paymentDate: '2026-07-05', paymentMethod: 'Chuyển khoản', notes: '' },
@@ -274,7 +255,6 @@ export const INITIAL_TUITION_RECORDS = [
   { id: 'TUI-202607-007', studentId: 'STU-007', month: '2026-07', feeAmount: 1700000, paidAmount: 1700000, status: 'paid', paymentDate: '2026-07-06', paymentMethod: 'Chuyển khoản', notes: '' },
   { id: 'TUI-202607-008', studentId: 'STU-008', month: '2026-07', feeAmount: 1600000, paidAmount: 1600000, status: 'paid', paymentDate: '2026-07-05', paymentMethod: 'Tiền mặt', notes: '' },
   { id: 'TUI-202607-009', studentId: 'STU-009', month: '2026-07', feeAmount: 2700000, paidAmount: 2700000, status: 'paid', paymentDate: '2026-07-04', paymentMethod: 'Chuyển khoản', notes: '' },
-  { id: 'TUI-202607-010', studentId: 'STU-010', month: '2026-07', feeAmount: 1800000, paidAmount: 1800000, status: 'paid', paymentDate: '2026-07-07', paymentMethod: 'Tiền mặt', notes: '' },
 
   // Tháng 06/2026
   { id: 'TUI-202606-001', studentId: 'STU-001', month: '2026-06', feeAmount: 1600000, paidAmount: 1600000, status: 'paid', paymentDate: '2026-06-05', paymentMethod: 'Chuyển khoản', notes: '' },
@@ -284,5 +264,4 @@ export const INITIAL_TUITION_RECORDS = [
   { id: 'TUI-202606-007', studentId: 'STU-007', month: '2026-06', feeAmount: 1700000, paidAmount: 1700000, status: 'paid', paymentDate: '2026-06-07', paymentMethod: 'Chuyển khoản', notes: '' },
   { id: 'TUI-202606-008', studentId: 'STU-008', month: '2026-06', feeAmount: 1600000, paidAmount: 1600000, status: 'paid', paymentDate: '2026-06-05', paymentMethod: 'Tiền mặt', notes: '' },
   { id: 'TUI-202606-009', studentId: 'STU-009', month: '2026-06', feeAmount: 2700000, paidAmount: 2700000, status: 'paid', paymentDate: '2026-06-03', paymentMethod: 'Chuyển khoản', notes: '' },
-  { id: 'TUI-202606-010', studentId: 'STU-010', month: '2026-06', feeAmount: 1800000, paidAmount: 1800000, status: 'paid', paymentDate: '2026-06-06', paymentMethod: 'Tiền mặt', notes: '' },
 ];

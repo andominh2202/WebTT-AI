@@ -2,27 +2,30 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
+    // Hàm kiểm tra quyền Admin: Yêu cầu 1 Document Read
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // Hàm kiểm tra Đăng nhập
     function isAuth() {
       return request.auth != null;
     }
 
     match /users/{userId} {
-      // Bất kỳ ai đăng nhập cũng có thể xem danh sách users (để lookup role)
       allow read: if isAuth();
       allow write: if isAdmin();
     }
 
     match /students/{document=**} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
     
     match /tuition/{document=**} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
 
     match /settings/{document=**} {

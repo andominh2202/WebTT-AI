@@ -89,7 +89,6 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
                     <td><strong>{i + 1}</strong></td>
                     <td>
                       <div style={{ fontWeight: 600 }}>{s.fullName}</div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.id}</span>
                     </td>
                     <td>{s.parentPhone || '---'}</td>
                     <td>{(s.subjects || []).slice(0, 2).map((sub, i) => <span key={i} className="tag-subject" title={sub.teacher}>{sub.subject}</span>)}</td>
@@ -114,6 +113,7 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
             <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
               <UserPlus size={18} /> Thêm học sinh mới
             </button>
+
             <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
               <Receipt size={16} /> Phiếu thu & Công nợ
             </button>

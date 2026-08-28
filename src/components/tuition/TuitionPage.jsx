@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useStudent } from '../../context/StudentContext';
 import { useTuition } from '../../context/TuitionContext';
 import { useUI } from '../../context/UIContext';
@@ -34,9 +34,10 @@ export default function TuitionPage() {
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
   // Sync tuition records when month changes
-  useMemo(() => {
+  useEffect(() => {
     syncMonth(currentMonth);
-  }, [currentMonth, students.length, syncMonth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMonth, students.length]);
 
   const records = useMemo(() => tuition.filter(t => t.month === currentMonth), [currentMonth, tuition]);
 
@@ -65,6 +66,18 @@ export default function TuitionPage() {
     });
     return { expected, collected, debt: Math.max(0, expected - collected), paidCount, total: records.length };
   }, [records]);
+
+  // Client-side pagination to fix browser freezing with 5000+ records
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
+  
+  useEffect(() => { 
+    setCurrentPage(1); 
+  }, [search, statusFilter, currentMonth]);
+
+  const displayedItems = useMemo(() => {
+    return filtered.slice(0, currentPage * itemsPerPage);
+  }, [filtered, currentPage]);
 
   const exportCSV = useCallback(() => {
     let csv = '\uFEFF' + 'STT,Mã HS,Họ và tên,SĐT,Môn học,Học phí,Đã nộp,Còn nợ,Trạng thái,Ngày nộp,Hình thức,Ghi chú\n';
@@ -138,14 +151,13 @@ export default function TuitionPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item, idx) => {
+            {displayedItems.map((item, idx) => {
               const debt = Math.max(0, item.feeAmount - item.paidAmount);
               return (
                 <tr key={item.id || `${item.studentId}-${item.month}`}>
                   <td><strong>{idx + 1}</strong></td>
                   <td>
-                    <div style={{ fontWeight: 700 }}>{item.student.fullName}</div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.studentId}</span>
+                    <div style={{ fontWeight: 600 }}>{item.student?.fullName || '---'}</div>
                   </td>
                   <td><a href={`tel:${item.student.parentPhone}`} className="phone-copy">{item.student.parentPhone || '---'}</a></td>
                   <td style={{ fontSize: '0.825rem' }}>{(item.student.subjects || []).map(sub => sub.subject).join(', ') || '---'}</td>
@@ -172,6 +184,14 @@ export default function TuitionPage() {
             })}
           </tbody>
         </table>
+        
+        {displayedItems.length < filtered.length && (
+          <div style={{ textAlign: 'center', padding: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <button className="btn btn-outline" onClick={() => setCurrentPage(p => p + 1)}>
+              Hiển thị thêm... ({filtered.length - displayedItems.length} bản ghi nữa)
+            </button>
+          </div>
+        )}
       </div>
 
       {filtered.length === 0 && (
