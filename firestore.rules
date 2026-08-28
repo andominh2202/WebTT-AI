@@ -27,7 +27,7 @@ service cloud.firestore {
     match /students/{document=**} {
       allow read: if isAuth();
       // Admin có toàn quyền. User chỉ có quyền tạo mới hoặc cập nhật (không xóa)
-      allow create, update: if isAuth();
+      allow create, update: if isAuth() && request.resource.data.keys().hasOnly(['fullName', 'parentPhone', 'dob', 'school', 'referrer', 'status', 'subjects', 'createdAt']);
       allow delete: if isAdmin();
     }
     

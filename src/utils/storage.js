@@ -125,9 +125,44 @@ export async function logoutUser() {
 
 // ==== Async CRUD Operations ====
 
+function validateAndWhitelistStudent(student, isUpdate = false) {
+  if (!student.fullName || typeof student.fullName !== 'string' || !student.fullName.trim()) {
+    throw new Error('fullName is required and must be a string');
+  }
+
+  const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+  const whitelistedSubjects = subjects.map(sub => {
+    if (typeof sub.feePerLesson !== 'number' || !Number.isFinite(sub.feePerLesson) || sub.feePerLesson < 0) {
+      throw new Error('feePerLesson must be a valid positive number');
+    }
+    return {
+      subject: String(sub.subject || ''),
+      teacher: String(sub.teacher || ''),
+      feePerLesson: sub.feePerLesson,
+      scheduleDays: Array.isArray(sub.scheduleDays) ? sub.scheduleDays.map(String) : []
+    };
+  });
+
+  const whitelisted = {
+    fullName: student.fullName.trim(),
+    parentPhone: student.parentPhone ? String(student.parentPhone) : '',
+    dob: student.dob ? String(student.dob) : '',
+    school: student.school ? String(student.school) : '',
+    referrer: student.referrer ? String(student.referrer) : '',
+    status: student.status === 'trial' ? 'trial' : 'official',
+    subjects: whitelistedSubjects
+  };
+
+  if (!isUpdate || student.createdAt) {
+    whitelisted.createdAt = student.createdAt ? String(student.createdAt) : new Date().toISOString().split('T')[0];
+  }
+
+  return whitelisted;
+}
+
 export async function addStudent(student) {
-  student.createdAt = student.createdAt || new Date().toISOString().split('T')[0];
-  const { id, ...dataToSave } = student;
+  const dataToSave = validateAndWhitelistStudent(student, false);
+  const { id } = student;
   
   if (!id) {
     // Sử dụng Firestore Auto-generated ID để tránh Race Condition
@@ -141,7 +176,7 @@ export async function addStudent(student) {
 }
 
 export async function updateStudent(student) {
-  const { id, ...dataToSave } = student;
+  const dataToSave = validateAndWhitelistStudent(student, true);
   await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), dataToSave, { merge: true });
   return student;
 }
