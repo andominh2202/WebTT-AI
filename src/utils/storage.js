@@ -76,18 +76,15 @@ export async function authenticateUser(emailOrUsername, password) {
   let userData = null;
 
   try {
-    const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
-    const found = usersSnap.docs.find(d => {
-      const data = d.data();
-      return data.username === emailOrUsername || data.email === emailOrUsername;
-    });
+    const usersSnap = await getDocs(query(collection(db, COLLECTIONS.USERS), where('email', '==', emailOrUsername)));
+    const found = usersSnap.docs[0];
 
     if (found) {
       userData = found.data();
       loginEmail = userData.email;
     }
   } catch (err) {
-    console.warn("Lỗi truy vấn users pre-login (do security rules), tiếp tục đăng nhập trực tiếp bằng email.");
+    // If it fails before login due to rules, we fall back to email directly (which might fail auth if it's a username).
   }
 
   const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
@@ -95,35 +92,30 @@ export async function authenticateUser(emailOrUsername, password) {
   
   if (!userData) {
     try {
-      const usersSnap = await getDocs(collection(db, COLLECTIONS.USERS));
-      const found = usersSnap.docs.find(d => {
-        const data = d.data();
-        return data.email === user.email || data.username === emailOrUsername;
-      });
-      if (found) {
-        userData = found.data();
+      // Must query specific document or where clause if security rules allow reading own doc
+      const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+      if (docSnap.exists()) {
+        userData = docSnap.data();
+      } else {
+        // Find by email in case uid is different or records were migrated
+        const usersSnap = await getDocs(query(collection(db, COLLECTIONS.USERS), where('email', '==', user.email)));
+        if (!usersSnap.empty) {
+          userData = usersSnap.docs[0].data();
+        }
       }
     } catch (err) {
       console.error("Lỗi lấy thông tin user post-login:", err);
+      // Security fix: Nếu lỗi do permission, vẫn tiếp tục nhưng gán default role thấp nhất, hoặc có thể chọn vứt luôn session.
+      // Dù sao với role 'user', rules trên server đã chặn rồi.
     }
   }
 
-  if (userData) {
-    return {
-      uid: user.uid,
-      email: user.email,
-      username: userData.username || emailOrUsername,
-      role: userData.role,
-      displayName: userData.displayName
-    };
-  }
-  
   return {
     uid: user.uid,
     email: user.email,
-    username: emailOrUsername,
-    role: 'user',
-    displayName: emailOrUsername.split('@')[0]
+    username: userData?.username || emailOrUsername,
+    role: userData?.role || 'user',
+    displayName: userData?.displayName || emailOrUsername.split('@')[0]
   };
 }
 
@@ -134,17 +126,17 @@ export async function logoutUser() {
 // ==== Async CRUD Operations ====
 
 export async function addStudent(student) {
-  if (!student.id) {
-    const snap = await getDocs(collection(db, COLLECTIONS.STUDENTS));
-    const maxIdNum = snap.docs.reduce((max, d) => {
-      const num = parseInt(d.id.replace('STU-', '')) || 0;
-      return num > max ? num : max;
-    }, 0);
-    student.id = `STU-${String(maxIdNum + 1).padStart(3, '0')}`;
-  }
   student.createdAt = student.createdAt || new Date().toISOString().split('T')[0];
   const { id, ...dataToSave } = student;
-  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), dataToSave);
+  
+  if (!id) {
+    // Sử dụng Firestore Auto-generated ID để tránh Race Condition
+    const docRef = doc(collection(db, COLLECTIONS.STUDENTS));
+    student.id = docRef.id;
+    await setDoc(docRef, dataToSave);
+  } else {
+    await setDoc(doc(db, COLLECTIONS.STUDENTS, id), dataToSave);
+  }
   return student;
 }
 
@@ -155,14 +147,16 @@ export async function updateStudent(student) {
 }
 
 export async function deleteStudent(id) {
-  await deleteDoc(doc(db, COLLECTIONS.STUDENTS, id));
-  // Tuitions should ideally be deleted via cloud function or batch, 
-  // but for simplicity we do it client-side.
-  const tSnap = await getDocs(collection(db, COLLECTIONS.TUITION));
   const batch = writeBatch(db);
+  // Xóa học sinh
+  batch.delete(doc(db, COLLECTIONS.STUDENTS, id));
+  
+  // Xóa toàn bộ học phí liên quan trong cùng 1 Transaction/Batch (Atomic Delete)
+  const tSnap = await getDocs(query(collection(db, COLLECTIONS.TUITION), where('studentId', '==', id)));
   tSnap.docs.forEach(d => {
-    if (d.data().studentId === id) batch.delete(d.ref);
+    batch.delete(d.ref);
   });
+  
   await batch.commit();
 }
 

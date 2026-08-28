@@ -32,10 +32,11 @@ export default function Header({ onToggleSidebar, onAddStudent }) {
         </div>
       </div>
       <div className="header-actions">
-        <button className="btn btn-primary" onClick={onAddStudent}>
-          <UserPlus size={18} />
-          <span>Thêm học sinh</span>
-        </button>
+        {currentUser?.role === 'admin' && (
+          <button className="btn btn-primary" onClick={onAddStudent}>
+            <Plus size={18} /> <span className="hide-mobile">Thêm học sinh</span>
+          </button>
+        )}
       </div>
     </header>
   );

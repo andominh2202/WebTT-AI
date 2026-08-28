@@ -88,9 +88,11 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
             <option value="">Tất cả môn học</option>
             {uniqueSubjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
           </select>
-          <button className="btn btn-primary" onClick={onAddStudent}>
-            <Plus size={18} /> Thêm học sinh
-          </button>
+          {currentUser?.role === 'admin' && (
+            <button className="btn btn-primary" onClick={onAddStudent}>
+              <Plus size={18} /> Thêm học sinh
+            </button>
+          )}
         </div>
       </div>
 
@@ -166,12 +168,16 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
                       <button className="action-btn view" title="Xem hồ sơ" onClick={() => onViewStudent(s.id)}>
                         <Eye size={16} />
                       </button>
-                      <button className="action-btn edit" title="Chỉnh sửa" onClick={() => onEditStudent(s.id)}>
-                        <Pencil size={16} />
-                      </button>
-                      <button className="action-btn delete" title="Xóa" onClick={() => confirmDelete(s)}>
-                        <Trash2 size={16} />
-                      </button>
+                      {currentUser?.role === 'admin' && (
+                        <>
+                          <button className="action-btn edit" title="Chỉnh sửa" onClick={() => onEditStudent(s.id)}>
+                            <Pencil size={16} />
+                          </button>
+                          <button className="action-btn delete" title="Xóa" onClick={() => confirmDelete(s)}>
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

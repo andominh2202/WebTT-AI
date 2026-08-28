@@ -186,24 +186,41 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.fullName.trim()) { showToast('Cảnh báo', 'Vui lòng nhập họ tên', 'warning'); return; }
     if (selectedSubjects.length === 0) { showToast('Cảnh báo', 'Vui lòng chọn ít nhất 1 môn', 'warning'); return; }
+
+    for (const sub of selectedSubjects) {
+      if (typeof sub.feePerLesson !== 'number' || sub.feePerLesson < 0 || isNaN(sub.feePerLesson)) {
+        showToast('Lỗi', 'Học phí không hợp lệ', 'danger');
+        return;
+      }
+    }
 
     const studentData = {
       ...form,
       subjects: selectedSubjects,
     };
 
-    if (isEditing) {
-      updateStudent({ ...studentData, id: editStudentId });
-      showToast('Thành công', 'Đã cập nhật thông tin học sinh', 'success');
-    } else {
-      addStudent(studentData);
-      showToast('Thành công', `Đã thêm ${form.fullName}`, 'success');
+    setIsSubmitting(true);
+    try {
+      if (isEditing) {
+        await updateStudent({ ...studentData, id: editStudentId });
+        showToast('Thành công', 'Đã cập nhật thông tin học sinh', 'success');
+      } else {
+        await addStudent(studentData);
+        showToast('Thành công', `Đã thêm ${form.fullName}`, 'success');
+      }
+      onClose();
+    } catch (error) {
+      console.error(error);
+      showToast('Lỗi', 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+    } finally {
+      setIsSubmitting(false);
     }
-    onClose();
   };
 
   return (
@@ -346,7 +363,9 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
 
           <div className="modal-footer">
             <button type="button" className="btn btn-outline" onClick={onClose}>Hủy</button>
-            <button type="submit" className="btn btn-primary"><Save size={18} /> Lưu học sinh</button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Đang lưu...' : <><Save size={18} /> Lưu học sinh</>}
+            </button>
           </div>
         </form>
       </div>

@@ -2,30 +2,42 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    // Hàm kiểm tra quyền Admin: Yêu cầu 1 Document Read
+    // Kiểm tra quyền Admin
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Hàm kiểm tra Đăng nhập
+    // Kiểm tra Đăng nhập
     function isAuth() {
       return request.auth != null;
     }
+    
+    function isValidAmount(amount) {
+      return amount is number && amount >= 0;
+    }
 
     match /users/{userId} {
-      allow read: if isAuth();
+      // User chỉ có thể xem profile của chính mình. Admin xem được tất cả
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin());
+      // Chỉ Admin mới có quyền tạo/sửa/xóa user (ngăn tự thăng cấp)
       allow write: if isAdmin();
     }
 
     match /students/{document=**} {
       allow read: if isAuth();
-      allow write: if isAdmin();
+      // Admin có toàn quyền. User chỉ có quyền tạo mới hoặc cập nhật (không xóa)
+      allow create, update: if isAuth();
+      allow delete: if isAdmin();
     }
     
     match /tuition/{document=**} {
       allow read: if isAuth();
-      allow write: if isAdmin();
+      allow delete: if isAdmin();
+      // Đảm bảo không truyền lên feeAmount âm
+      allow create, update: if isAuth() 
+        && (!request.resource.data.keys().hasAny(['feeAmount']) || isValidAmount(request.resource.data.feeAmount))
+        && (!request.resource.data.keys().hasAny(['paidAmount']) || isValidAmount(request.resource.data.paidAmount));
     }
 
     match /settings/{document=**} {

@@ -110,9 +110,11 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
             <div className="card-title"><Zap size={18} /> Thao tác nhanh</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
-              <UserPlus size={18} /> Thêm học sinh mới
-            </button>
+            {currentUser?.role === 'admin' && (
+              <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
+                <Plus size={18} /> Thêm học sinh
+              </button>
+            )}
 
             <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
               <Receipt size={16} /> Phiếu thu & Công nợ
