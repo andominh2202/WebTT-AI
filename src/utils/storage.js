@@ -34,7 +34,7 @@ export async function migrateSubjectData() {
       };
     });
     
-    const ref = doc(db, COLLECTIONS.STUDENTS, student.id);
+    const ref = doc(db, COLLECTIONS.STUDENTS, docSnap.id);
     batch.update(ref, { subjects: newSubjects });
   });
   
@@ -206,16 +206,23 @@ function validateAndWhitelistTuition(record) {
     throw new Error('paidAmount phải là số hợp lệ và >= 0');
   }
 
-  const breakdown = Array.isArray(record.subjectBreakdown) ? record.subjectBreakdown.map(sub => ({
-    subject: String(sub.subject || ''),
-    teacher: String(sub.teacher || ''),
-    expectedLessons: Number(sub.expectedLessons || 0),
-    holidayLessons: Number(sub.holidayLessons || 0),
-    actualLessons: Number(sub.actualLessons || 0),
-    feePerLesson: Number(sub.feePerLesson || 0),
-    feeAmount: Number(sub.feeAmount || 0),
-    notes: String(sub.notes || '')
-  })) : [];
+  const breakdown = Array.isArray(record.subjectBreakdown) ? record.subjectBreakdown.map(sub => {
+    const validateNum = (val, name) => {
+      const num = typeof val === 'number' ? val : Number(val);
+      if (!Number.isFinite(num) || num < 0) throw new Error(`${name} trong subjectBreakdown phải là số hợp lệ và >= 0`);
+      return num;
+    };
+    return {
+      subject: String(sub.subject || ''),
+      teacher: String(sub.teacher || ''),
+      expectedLessons: validateNum(sub.expectedLessons || 0, 'expectedLessons'),
+      holidayLessons: validateNum(sub.holidayLessons || 0, 'holidayLessons'),
+      actualLessons: validateNum(sub.actualLessons || 0, 'actualLessons'),
+      feePerLesson: validateNum(sub.feePerLesson || 0, 'feePerLesson'),
+      feeAmount: validateNum(sub.feeAmount || 0, 'feeAmount'),
+      notes: String(sub.notes || '')
+    };
+  }) : [];
 
   return {
     studentId: String(record.studentId || ''),

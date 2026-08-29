@@ -6,9 +6,10 @@ import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency } from '../../utils/storage';
-import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChart2, FileSpreadsheet, CheckCircle, Clock, Receipt, BarChart3 } from 'lucide-react';
+import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChart2, FileSpreadsheet, CheckCircle, Clock, Receipt, BarChart3, Plus } from 'lucide-react';
 
 export default function Dashboard({ onAddStudent, onExportCSV }) {
+  const { currentUser } = useAuth();
   const { students, totalCount } = useStudent();
   const { tuition } = useTuition();
   const navigate = useNavigate();

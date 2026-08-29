@@ -1,9 +1,6 @@
 import { useLocation } from 'react-router-dom';
-import { useUI } from "../context/UIContext";
-import { useSettings } from "../context/SettingsContext";
-import { useStudent } from "../context/StudentContext";
-import { useTuition } from "../context/TuitionContext";
-import { Menu, UserPlus } from 'lucide-react';
+import { useAuth } from "../context/AuthContext";
+import { Menu, Plus } from 'lucide-react';
 
 const titleMap = {
   dashboard: { title: 'Tổng quan hệ thống', sub: 'Thống kê hoạt động, số lượng học sinh và doanh thu nhanh' },
@@ -15,6 +12,7 @@ const titleMap = {
 };
 
 export default function Header({ onToggleSidebar, onAddStudent }) {
+  const { currentUser } = useAuth();
   const location = useLocation();
   const path = location.pathname.replace('/', '') || 'dashboard';
   const tabId = path === 'teacher-fees' ? 'teacherFees' : path;
