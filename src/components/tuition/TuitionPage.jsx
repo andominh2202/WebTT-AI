@@ -19,9 +19,11 @@ function getMonthOptions() {
 }
 
 export default function TuitionPage() {
-  const { students } = useStudent();
-  const { tuition, syncMonth } = useTuition();
+  const { students, loading: studentsLoading } = useStudent();
+  const { tuition, syncMonth, loading: tuitionLoading } = useTuition();
   const { showToast } = useUI();
+
+  const loading = studentsLoading || tuitionLoading;
 
   const today = new Date();
   const defaultMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -182,6 +184,21 @@ export default function TuitionPage() {
                 </tr>
               );
             })}
+            {loading && Array.from({ length: 3 }).map((_, idx) => (
+              <tr key={`skeleton-${idx}`}>
+                <td><div className="skeleton-box" style={{ width: '20px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '120px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '150px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '80px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '60px', height: '20px', borderRadius: '4px' }}></div></td>
+                <td><div className="skeleton-box" style={{ width: '60px', height: '20px', borderRadius: '4px' }}></div></td>
+              </tr>
+            ))}
           </tbody>
         </table>
         

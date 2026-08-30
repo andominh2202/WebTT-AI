@@ -10,10 +10,15 @@ export function useTuition() {
 
 export function TuitionProvider({ children }) {
   const [tuition, setTuition] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { students } = useStudent();
 
   useEffect(() => {
-    const unsub = S.subscribeToCollection('tuition', setTuition);
+    setLoading(true);
+    const unsub = S.subscribeToCollection('tuition', (data) => {
+      setTuition(data);
+      setLoading(false);
+    });
     return () => unsub && unsub();
   }, []);
 
@@ -26,7 +31,7 @@ export function TuitionProvider({ children }) {
   }, [students, tuition]);
 
   return (
-    <TuitionContext.Provider value={{ tuition, saveTuition, syncMonth }}>
+    <TuitionContext.Provider value={{ tuition, saveTuition, syncMonth, loading }}>
       {children}
     </TuitionContext.Provider>
   );

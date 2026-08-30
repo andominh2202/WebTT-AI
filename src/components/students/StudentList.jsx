@@ -39,9 +39,14 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
 
   const handleConfirmDelete = async () => {
     if (studentToDelete) {
-      await deleteStudent(studentToDelete.id);
-      showToast('Đã xóa', `Đã xóa học sinh ${studentToDelete.fullName}`, 'danger');
-      setStudentToDelete(null);
+      try {
+        await deleteStudent(studentToDelete.id);
+        showToast('Đã xóa', `Đã xóa học sinh ${studentToDelete.fullName}`, 'danger');
+      } catch (error) {
+        showToast('Lỗi', error.message || 'Không thể xóa học sinh', 'danger');
+      } finally {
+        setStudentToDelete(null);
+      }
     }
   };
 

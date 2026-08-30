@@ -10,9 +10,12 @@ import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChar
 
 export default function Dashboard({ onAddStudent, onExportCSV }) {
   const { currentUser } = useAuth();
-  const { students, totalCount } = useStudent();
-  const { tuition } = useTuition();
+  const { students, totalCount, loading: studentsLoading } = useStudent();
+  const { tuition, loading: tuitionLoading } = useTuition();
   const navigate = useNavigate();
+
+  const loading = studentsLoading || tuitionLoading;
+
 
   const stats = useMemo(() => {
     const total = totalCount || students.length;
@@ -83,7 +86,19 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
             <table className="custom-table">
               <thead><tr><th>STT</th><th>Học sinh</th><th>SĐT Phụ huynh</th><th>Môn học</th><th>Trạng thái</th></tr></thead>
               <tbody>
-                {recentStudents.length === 0 ? (
+                {loading ? (
+                  Array.from({ length: 3 }).map((_, idx) => (
+                    <tr key={`skeleton-${idx}`}>
+                      <td><div className="skeleton-box" style={{ width: '20px', height: '20px', borderRadius: '4px' }}></div></td>
+                      <td>
+                        <div className="skeleton-box" style={{ width: '120px', height: '20px', borderRadius: '4px' }}></div>
+                      </td>
+                      <td><div className="skeleton-box" style={{ width: '100px', height: '20px', borderRadius: '4px' }}></div></td>
+                      <td><div className="skeleton-box" style={{ width: '150px', height: '20px', borderRadius: '4px' }}></div></td>
+                      <td><div className="skeleton-box" style={{ width: '60px', height: '20px', borderRadius: '4px' }}></div></td>
+                    </tr>
+                  ))
+                ) : recentStudents.length === 0 ? (
                   <tr><td colSpan="5" style={{ textAlign: 'center' }}>Chưa có học sinh</td></tr>
                 ) : recentStudents.map((s, i) => (
                   <tr key={s.id}>

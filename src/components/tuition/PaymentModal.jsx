@@ -54,7 +54,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
 
   const [year, month] = currentMonth.split('-');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const fee = parseFloat(feeAmount) || 0;
     const paid = parseFloat(paidAmount) || 0;
@@ -64,20 +64,24 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
     else if (fee === 0 && paid === 0) status = 'paid';
     else if (paid !== 0) status = 'partial';
 
-    saveTuition({
-      studentId,
-      month: currentMonth,
-      feeAmount: fee,
-      paidAmount: paid,
-      status,
-      paymentDate: paid > 0 ? paymentDate : '',
-      paymentMethod: paid > 0 ? paymentMethod : '',
-      notes,
-      subjectBreakdown
-    });
+    try {
+      await saveTuition({
+        studentId,
+        month: currentMonth,
+        feeAmount: fee,
+        paidAmount: paid,
+        status,
+        paymentDate: paid > 0 ? paymentDate : '',
+        paymentMethod: paid > 0 ? paymentMethod : '',
+        notes,
+        subjectBreakdown
+      });
 
-    showToast('Thành công', 'Đã ghi nhận thông tin đóng học phí!', 'success');
-    onClose();
+      showToast('Thành công', 'Đã ghi nhận thông tin đóng học phí!', 'success');
+      onClose();
+    } catch (error) {
+      showToast('Lỗi', error.message || 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+    }
   };
 
   return (

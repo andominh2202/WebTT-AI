@@ -217,8 +217,7 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
       }
       onClose();
     } catch (error) {
-      console.error(error);
-      showToast('Lỗi', 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+      showToast('Lỗi', error.message || 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
     } finally {
       setIsSubmitting(false);
     }
