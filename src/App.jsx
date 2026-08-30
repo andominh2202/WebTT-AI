@@ -19,7 +19,7 @@ const StudentDetailModal = lazy(() => import('./components/students/StudentDetai
 
 export default function App() {
   const { currentUser, isAuthLoading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 900);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -70,9 +70,9 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => { if (window.innerWidth <= 900) setSidebarOpen(false); }} />
 
-      <div className="main-wrapper">
+      <div className={`main-wrapper ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <Header
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           onAddStudent={handleAddStudent}
