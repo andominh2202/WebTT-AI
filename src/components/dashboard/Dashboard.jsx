@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUI } from "../../context/UIContext";
 import { useAuth } from "../../context/AuthContext";
@@ -13,6 +13,7 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
   const { students, totalCount, loading: studentsLoading } = useStudent();
   const { tuition, loading: tuitionLoading } = useTuition();
   const navigate = useNavigate();
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(true);
 
   const loading = studentsLoading || tuitionLoading;
 
@@ -76,11 +77,16 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
       </div>
 
       {/* Dashboard Grid */}
-      <div className="dashboard-grid">
+      <div className={`dashboard-grid ${!isQuickActionsOpen ? 'hide-right' : ''}`}>
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="card-header">
             <div className="card-title"><UserCheck size={18} /> Học sinh mới đăng ký gần đây</div>
-            <button className="btn btn-outline btn-sm" onClick={() => navigate('/students')}>Xem tất cả</button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-outline btn-sm" onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}>
+                {isQuickActionsOpen ? 'Ẩn tab thao tác' : 'Hiện tab thao tác'}
+              </button>
+              <button className="btn btn-primary btn-sm" onClick={() => navigate('/students')}>Xem tất cả</button>
+            </div>
           </div>
           <div className="table-responsive">
             <table className="custom-table">
@@ -121,28 +127,30 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header">
-            <div className="card-title"><Zap size={18} /> Thao tác nhanh</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {currentUser?.role === 'admin' && (
-              <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
-                <Plus size={18} /> Thêm học sinh
-              </button>
-            )}
+        {isQuickActionsOpen && (
+          <div className="card quick-actions-col" style={{ marginBottom: 0 }}>
+            <div className="card-header">
+              <div className="card-title"><Zap size={18} /> Thao tác nhanh</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {currentUser?.role === 'admin' && (
+                <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
+                  <Plus size={18} /> Thêm học sinh
+                </button>
+              )}
 
-            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
-              <Receipt size={16} /> Phiếu thu & Công nợ
-            </button>
-            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/reports')}>
-              <BarChart3 size={16} /> Báo cáo thống kê
-            </button>
-            <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={onExportCSV}>
-              <FileSpreadsheet size={18} /> Xuất danh sách học phí ra CSV
-            </button>
+              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
+                <Receipt size={16} /> Phiếu thu & Công nợ
+              </button>
+              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/reports')}>
+                <BarChart3 size={16} /> Báo cáo thống kê
+              </button>
+              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={onExportCSV}>
+                <FileSpreadsheet size={18} /> Xuất danh sách học phí ra CSV
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
