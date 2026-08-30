@@ -32,6 +32,7 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
   }, [students, search, statusFilter, subjectFilter]);
 
   const [studentToDelete, setStudentToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const confirmDelete = (student) => {
     setStudentToDelete(student);
@@ -39,13 +40,15 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
 
   const handleConfirmDelete = async () => {
     if (studentToDelete) {
+      setIsDeleting(true);
       try {
         await deleteStudent(studentToDelete.id);
         showToast('Đã xóa', `Đã xóa học sinh ${studentToDelete.fullName}`, 'danger');
+        setStudentToDelete(null);
       } catch (error) {
         showToast('Lỗi', error.message || 'Không thể xóa học sinh', 'danger');
       } finally {
-        setStudentToDelete(null);
+        setIsDeleting(false);
       }
     }
   };
@@ -220,7 +223,7 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
         )}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && !loading && (
         <div className="empty-state">
           <Users size={48} />
           <h4>Không tìm thấy học sinh nào</h4>
@@ -237,14 +240,16 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
               <button className="modal-close" onClick={cancelDelete}>×</button>
             </div>
             <div className="modal-body">
-              <p>Bạn có chắc chắn muốn xóa học sinh <strong>{studentToDelete.fullName}</strong> ({studentToDelete.id})?</p>
+              <p>Bạn có chắc chắn muốn xóa học sinh <strong>{studentToDelete.fullName}</strong>?</p>
               <p style={{ color: 'var(--danger)', marginTop: '0.75rem', fontSize: '0.85rem', padding: '0.5rem', background: 'var(--danger-light)', borderRadius: 'var(--radius-sm)' }}>
                 <strong>Lưu ý:</strong> Mọi lịch sử đóng học phí liên quan đến học sinh này cũng sẽ bị xóa vĩnh viễn và không thể khôi phục!
               </p>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-outline" onClick={cancelDelete}>Hủy bỏ</button>
-              <button className="btn btn-danger" onClick={handleConfirmDelete}>Xác nhận xóa</button>
+              <button className="btn btn-outline" onClick={cancelDelete} disabled={isDeleting}>Hủy bỏ</button>
+              <button className="btn btn-danger" onClick={handleConfirmDelete} disabled={isDeleting}>
+                {isDeleting ? <><Loader2 size={16} className="spin" style={{ marginRight: '6px' }} /> Đang xóa...</> : 'Xác nhận xóa'}
+              </button>
             </div>
           </div>
         </div>
