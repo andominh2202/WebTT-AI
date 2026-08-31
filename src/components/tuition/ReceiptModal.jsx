@@ -39,7 +39,7 @@ export default function ReceiptModal({ isOpen, onClose, studentId, currentMonth 
       <div className="modal-container" style={{ maxWidth: 600 }}>
         <div className="modal-header">
           <h3>Phiếu thu học phí</h3>
-          <button className="modal-close" onClick={onClose}><X size={22} /></button>
+          <button className="modal-close" onClick={onClose} aria-label="Đóng"><X size={22} /></button>
         </div>
         <div className="modal-body">
           <div className="receipt-box" id="printable-receipt">

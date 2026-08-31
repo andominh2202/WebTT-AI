@@ -86,8 +86,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Lê Quý Đôn',
     referrer: 'Cô Lan (GV Toán)',
     subjects: [
-      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[0] },
-      { subject: 'Anh 9', teacher: INITIAL_TEACHERS[1] }
+      { subject: 'Toán 9A1', teacher: 'Cô Yến' },
+      { subject: 'Tiếng Anh 9', teacher: 'Chị Ngân' }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 1600000,
@@ -103,8 +103,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Giảng Võ',
     referrer: 'Phụ huynh bạn Quân',
     subjects: [
-      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[2] },
-      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[3] }
+      { subject: 'Anh 8A', teacher: 'Chị Ngân' },
+      { subject: 'Văn 8', teacher: 'Chị Thư' }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5', 'Chủ Nhật'],
     monthlyFee: 1800000,
@@ -120,8 +120,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Cầu Giấy',
     referrer: 'Tìm trên Facebook',
     subjects: [
-      { subject: 'Toán 7', teacher: INITIAL_TEACHERS[4] },
-      { subject: 'Lý 7', teacher: INITIAL_TEACHERS[0] }
+      { subject: 'Toán 7A1', teacher: 'Anh Trọng' },
+      { subject: 'Văn 7', teacher: 'Chị Nhung' }
     ],
     scheduleDays: ['Thứ 7', 'Chủ Nhật'],
     monthlyFee: 1500000,
@@ -137,9 +137,9 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Kim Liên',
     referrer: 'Thầy Hưng',
     subjects: [
-      { subject: 'Lý 10', teacher: INITIAL_TEACHERS[1] },
-      { subject: 'Hóa 10', teacher: INITIAL_TEACHERS[2] },
-      { subject: 'Toán 10', teacher: INITIAL_TEACHERS[3] }
+      { subject: 'Lý 10', teacher: 'Thầy Tiến' },
+      { subject: 'Hóa 10', teacher: 'Thầy Duy' },
+      { subject: 'Toán 10', teacher: 'Thầy Tài' }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 2400000,
@@ -155,8 +155,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Dịch Vọng',
     referrer: 'Mẹ bạn Ánh giới thiệu',
     subjects: [
-      { subject: 'Toán 6', teacher: INITIAL_TEACHERS[4] },
-      { subject: 'Anh 6', teacher: INITIAL_TEACHERS[0] }
+      { subject: 'Toán 6', teacher: 'Chị Dung' },
+      { subject: 'Tiếng Anh 6', teacher: 'Chị Ngân' }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5'],
     monthlyFee: 1400000,
@@ -172,8 +172,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Trưng Vương',
     referrer: 'Biển quảng cáo',
     subjects: [
-      { subject: 'Văn 8', teacher: INITIAL_TEACHERS[1] },
-      { subject: 'Anh 8', teacher: INITIAL_TEACHERS[2] }
+      { subject: 'Văn 8', teacher: 'Chị Thư' },
+      { subject: 'Anh 8B', teacher: 'Chị Ngân' }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 6'],
     monthlyFee: 1200000,
@@ -189,8 +189,8 @@ export const INITIAL_STUDENTS = [
     school: 'THCS Ngô Sĩ Liên',
     referrer: 'Bác Mai',
     subjects: [
-      { subject: 'Toán 9', teacher: INITIAL_TEACHERS[3] },
-      { subject: 'Văn 9', teacher: INITIAL_TEACHERS[4] }
+      { subject: 'Toán 9A2', teacher: 'Cô Hường' },
+      { subject: 'Văn 9', teacher: 'Cô Lan' }
     ],
     scheduleDays: ['Thứ 3', 'Thứ 5', 'Thứ 7'],
     monthlyFee: 1700000,
@@ -206,8 +206,8 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Chu Văn An',
     referrer: 'Anh Hoàng (Cựu học sinh)',
     subjects: [
-      { subject: 'Lý 11', teacher: INITIAL_TEACHERS[0] },
-      { subject: 'Toán 11', teacher: INITIAL_TEACHERS[1] }
+      { subject: 'Lý 11', teacher: 'Thầy Tiến' },
+      { subject: 'Toán 11', teacher: 'Anh Quân' }
     ],
     scheduleDays: ['Thứ 4', 'Chủ Nhật'],
     monthlyFee: 1600000,
@@ -223,9 +223,9 @@ export const INITIAL_STUDENTS = [
     school: 'THPT Phan Đình Phùng',
     referrer: 'Cô Hoa (GV Hóa)',
     subjects: [
-      { subject: 'Hóa 12', teacher: INITIAL_TEACHERS[2] },
-      { subject: 'Toán 12', teacher: INITIAL_TEACHERS[3] },
-      { subject: 'Lý 12', teacher: INITIAL_TEACHERS[4] }
+      { subject: 'Hóa 12', teacher: 'Thầy Duy' },
+      { subject: 'Toán 12', teacher: 'Thầy Tài' },
+      { subject: 'Lý 12', teacher: 'Thầy Tiến' }
     ],
     scheduleDays: ['Thứ 2', 'Thứ 4', 'Thứ 6'],
     monthlyFee: 2700000,

@@ -5,7 +5,7 @@ import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { CLASS_MAP } from '../../data/mockData';
-import { X, Save, Plus, Check } from 'lucide-react';
+import { X, Save, Plus, Check, Loader2 } from 'lucide-react';
 
 const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
 
@@ -228,7 +228,7 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
       <div className="modal-container">
         <div className="modal-header">
           <h3>{isEditing ? 'Chỉnh sửa thông tin học sinh' : 'Thêm học sinh mới'}</h3>
-          <button className="modal-close" onClick={onClose}><X size={22} /></button>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Đóng"><X size={22} /></button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -362,9 +362,9 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Hủy</button>
+            <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>Hủy</button>
             <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang lưu...' : <><Save size={18} /> Lưu học sinh</>}
+              {isSubmitting ? <><Loader2 size={16} className="spin" style={{ marginRight: '6px' }} /> Đang lưu...</> : <><Save size={18} /> Lưu học sinh</>}
             </button>
           </div>
         </form>

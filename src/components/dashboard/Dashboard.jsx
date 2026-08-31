@@ -132,21 +132,27 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
             <div className="card-header">
               <div className="card-title"><Zap size={18} /> Thao tác nhanh</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {currentUser?.role === 'admin' && (
-                <button className="btn btn-primary" style={{ justifyContent: 'flex-start' }} onClick={onAddStudent}>
-                  <Plus size={18} /> Thêm học sinh
-                </button>
-              )}
-
-              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/tuition')}>
-                <Receipt size={16} /> Phiếu thu & Công nợ
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <button className="quick-action-item" onClick={() => navigate('/tuition')}>
+                <div className="quick-action-icon"><Receipt size={18} /></div>
+                <div className="quick-action-info">
+                  <span className="quick-action-title">Phiếu thu & Công nợ</span>
+                  <span className="quick-action-desc">Quản lý thu học phí</span>
+                </div>
               </button>
-              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={() => navigate('/reports')}>
-                <BarChart3 size={16} /> Báo cáo thống kê
+              <button className="quick-action-item" onClick={() => navigate('/reports')}>
+                <div className="quick-action-icon"><BarChart3 size={18} /></div>
+                <div className="quick-action-info">
+                  <span className="quick-action-title">Báo cáo thống kê</span>
+                  <span className="quick-action-desc">Xem doanh thu & học sinh</span>
+                </div>
               </button>
-              <button className="btn btn-outline" style={{ justifyContent: 'flex-start' }} onClick={onExportCSV}>
-                <FileSpreadsheet size={18} /> Xuất danh sách học phí ra CSV
+              <button className="quick-action-item" onClick={onExportCSV}>
+                <div className="quick-action-icon"><FileSpreadsheet size={18} /></div>
+                <div className="quick-action-info">
+                  <span className="quick-action-title">Xuất file CSV</span>
+                  <span className="quick-action-desc">Tải dữ liệu danh sách</span>
+                </div>
               </button>
             </div>
           </div>

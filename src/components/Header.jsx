@@ -21,7 +21,7 @@ export default function Header({ onToggleSidebar, onAddStudent }) {
   return (
     <header className="top-header">
       <div className="header-left">
-        <button className="mobile-menu-toggle" onClick={onToggleSidebar}>
+        <button className="mobile-menu-toggle" onClick={onToggleSidebar} aria-label="Menu">
           <Menu size={24} />
         </button>
         <div className="page-title-box">
@@ -31,7 +31,7 @@ export default function Header({ onToggleSidebar, onAddStudent }) {
       </div>
       <div className="header-actions">
         {currentUser?.role === 'admin' && (
-          <button className="btn btn-primary" onClick={onAddStudent}>
+          <button className="btn btn-primary" onClick={onAddStudent} aria-label="Thêm học sinh">
             <Plus size={18} /> <span className="hide-mobile">Thêm học sinh</span>
           </button>
         )}

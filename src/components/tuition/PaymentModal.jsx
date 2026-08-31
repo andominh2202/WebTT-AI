@@ -5,7 +5,7 @@ import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { calculateTuitionForMonth } from '../../utils/tuitionCalculator';
-import { X, Check } from 'lucide-react';
+import { X, Check, Loader2 } from 'lucide-react';
 
 export default function PaymentModal({ isOpen, onClose, studentId, currentMonth }) {
   const { students } = useStudent();
@@ -26,6 +26,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
   const [notes, setNotes] = useState('');
   const [studentName, setStudentName] = useState('');
   const [subjectBreakdown, setSubjectBreakdown] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !data?.student) return;
@@ -56,6 +57,7 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const fee = parseFloat(feeAmount) || 0;
     const paid = parseFloat(paidAmount) || 0;
 
@@ -81,6 +83,8 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
       onClose();
     } catch (error) {
       showToast('Lỗi', error.message || 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -88,8 +92,8 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
     <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-container">
         <div className="modal-header">
-          <h3>Ghi nhận nộp học phí</h3>
-          <button className="modal-close" onClick={onClose}><X size={22} /></button>
+          <h3>Thanh toán học phí</h3>
+          <button className="modal-close" onClick={onClose} aria-label="Đóng"><X size={22} /></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
@@ -147,8 +151,10 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Hủy</button>
-            <button type="submit" className="btn btn-success"><Check size={18} /> Xác nhận nộp tiền</button>
+            <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>Hủy</button>
+            <button type="submit" className="btn btn-success" disabled={isSubmitting}>
+              {isSubmitting ? <><Loader2 size={18} className="spin" style={{ marginRight: '6px' }} /> Đang xử lý...</> : <><Check size={18} /> Xác nhận nộp tiền</>}
+            </button>
           </div>
         </form>
       </div>
