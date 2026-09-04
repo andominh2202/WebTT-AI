@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "./context/AuthContext";
+import { useUI } from "./context/UIContext";
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Toast from './components/Toast';
 import Login from './components/Login';
 import GlobalLoading from './components/GlobalLoading';
+import { WifiOff } from 'lucide-react';
 import './styles/style.css';
 
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
@@ -16,9 +18,11 @@ const SettingsPage = lazy(() => import('./components/settings/SettingsPage'));
 const TeacherFeesPage = lazy(() => import('./components/tuition/TeacherFeesPage'));
 const StudentModal = lazy(() => import('./components/students/StudentModal'));
 const StudentDetailModal = lazy(() => import('./components/students/StudentDetailModal'));
+const NotFound = lazy(() => import('./components/NotFound'));
 
 export default function App() {
   const { currentUser, isAuthLoading } = useAuth();
+  const { isOnline } = useUI();
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 900);
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +33,17 @@ export default function App() {
 
   // Student Detail Modal state
   const [detailStudentId, setDetailStudentId] = useState(null);
+
+  // Handle responsive sidebar on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 900) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Redirect user role if they somehow enter restricted settings tab
   useEffect(() => {
@@ -62,6 +77,29 @@ export default function App() {
   if (!currentUser) {
     return (
       <>
+        {!isOnline && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            backgroundColor: 'var(--warning-light, #fffbeb)',
+            color: 'var(--warning-text, #b45309)',
+            borderBottom: '1px solid var(--warning, #f59e0b)',
+            padding: '0.5rem 1rem',
+            textAlign: 'center',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}>
+            <WifiOff size={16} />
+            <span>Bạn đang ngoại tuyến. Vui lòng kết nối mạng để đăng nhập.</span>
+          </div>
+        )}
         <Login />
         <Toast />
       </>
@@ -73,6 +111,25 @@ export default function App() {
       <Sidebar isOpen={sidebarOpen} onClose={() => { if (window.innerWidth <= 900) setSidebarOpen(false); }} />
 
       <div className={`main-wrapper ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {!isOnline && (
+          <div style={{
+            backgroundColor: 'var(--warning-light, #fffbeb)',
+            color: 'var(--warning-text, #b45309)',
+            borderBottom: '1px solid var(--warning, #f59e0b)',
+            padding: '0.5rem 1rem',
+            textAlign: 'center',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}>
+            <WifiOff size={16} />
+            <span>Bạn đang ngoại tuyến. Một số tính năng và đồng bộ có thể bị gián đoạn.</span>
+          </div>
+        )}
+
         <Header
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           onAddStudent={handleAddStudent}
@@ -87,7 +144,7 @@ export default function App() {
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/teacher-fees" element={<TeacherFeesPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </main>

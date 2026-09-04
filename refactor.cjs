@@ -49,9 +49,9 @@ files.forEach(f => {
   // Adjust relative paths based on depth
   const depth = f.split('/').length;
   if (depth === 2) { // src/App.jsx
-    content = content.replace(/\"\.\.\/\.\.\/context\//g, '"./context/');
+    content = content.replace(/"\.\.\/\.\.\/context\//g, '"./context/');
   } else if (depth === 3) { // src/components/Login.jsx
-    content = content.replace(/\"\.\.\/\.\.\/context\//g, '"../context/');
+    content = content.replace(/"\.\.\/\.\.\/context\//g, '"../context/');
   }
 
   fs.writeFileSync(f, content);

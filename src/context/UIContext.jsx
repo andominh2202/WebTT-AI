@@ -10,6 +10,7 @@ export function useUI() {
 export function UIProvider({ children }) {
   const [theme, setTheme] = useState('light');
   const [toasts, setToasts] = useState([]);
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
 
   useEffect(() => {
     const savedTheme = S.getSavedTheme();
@@ -35,8 +36,28 @@ export function UIProvider({ children }) {
     }, 3500);
   }, []);
 
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      showToast('Đã kết nối', 'Kết nối Internet đã được khôi phục.', 'success');
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      showToast('Ngoại tuyến', 'Bạn đang ngoại tuyến. Một số tính năng có thể bị gián đoạn.', 'warning');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [showToast]);
+
   return (
-    <UIContext.Provider value={{ theme, toggleTheme, toasts, showToast }}>
+    <UIContext.Provider value={{ theme, toggleTheme, toasts, showToast, isOnline }}>
       {children}
     </UIContext.Provider>
   );

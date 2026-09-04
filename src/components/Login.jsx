@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import { useUI } from "../context/UIContext";
 import { useAuth } from "../context/AuthContext";
-import { useSettings } from "../context/SettingsContext";
-import { useStudent } from "../context/StudentContext";
-import { useTuition } from "../context/TuitionContext";
 import { GraduationCap, Lock, User, LogIn } from 'lucide-react';
 
 export default function Login() {
@@ -16,8 +12,13 @@ export default function Login() {
     e.preventDefault();
     if (!email.trim() || !password) return;
     setLoading(true);
-    await login(email, password);
-    setLoading(false);
+    try {
+      await login(email.trim(), password);
+    } catch (err) {
+      console.error('Unhandled login submit error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -37,8 +37,8 @@ export function StudentProvider({ children }) {
     setTotalCount(prev => prev + 1);
   }, []);
 
-  const updateStudent = useCallback(async (data) => {
-    await S.updateStudent(data);
+  const updateStudent = useCallback(async (data, expectedVersion) => {
+    await S.updateStudent(data, expectedVersion);
   }, []);
 
   const deleteStudent = useCallback(async (id) => {

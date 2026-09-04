@@ -1,8 +1,4 @@
-import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
-import { useStudent } from "../../context/StudentContext";
-import { useTuition } from "../../context/TuitionContext";
 import { Database, DownloadCloud, UploadCloud, Download, Upload } from 'lucide-react';
 
 export default function SettingsPage() {

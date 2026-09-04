@@ -1,7 +1,7 @@
-import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch, deleteDoc, query, where, limit, startAfter, orderBy, getCountFromServer, documentId } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, getDocs, onSnapshot, writeBatch, runTransaction, query, where, limit, orderBy, getCountFromServer, documentId } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { db, auth } from '../config/firebase';
-import { INITIAL_STUDENTS, INITIAL_TUITION_RECORDS, INITIAL_SUBJECTS, INITIAL_TEACHERS, CLASS_MAP } from '../data/mockData';
+import { INITIAL_STUDENTS, INITIAL_TUITION_RECORDS, INITIAL_SUBJECTS, INITIAL_TEACHERS } from '../data/mockData';
 
 const COLLECTIONS = {
   STUDENTS: 'students',
@@ -51,12 +51,12 @@ export async function initStorage() {
     const batch = writeBatch(db);
     INITIAL_STUDENTS.forEach(s => {
       const docRef = doc(collection(db, COLLECTIONS.STUDENTS), s.id);
-      const { id, ...dataToSave } = s;
+      const { id: _id, ...dataToSave } = s;
       batch.set(docRef, dataToSave);
     });
     INITIAL_TUITION_RECORDS.forEach(t => {
       const docRef = doc(collection(db, COLLECTIONS.TUITION), t.id);
-      const { id, ...dataToSave } = t;
+      const { id: _id, ...dataToSave } = t;
       batch.set(docRef, dataToSave);
     });
     INITIAL_SUBJECTS.forEach((sub, idx) => {
@@ -83,7 +83,7 @@ export async function authenticateUser(emailOrUsername, password) {
       userData = found.data();
       loginEmail = userData.email;
     }
-  } catch (err) {
+  } catch {
     // If it fails before login due to rules, we fall back to email directly (which might fail auth if it's a username).
   }
 
@@ -157,28 +157,78 @@ function validateAndWhitelistStudent(student, isUpdate = false) {
     whitelisted.createdAt = student.createdAt ? String(student.createdAt) : new Date().toISOString().split('T')[0];
   }
 
+  // version và updatedAt do addStudent / updateStudent kiểm soát độc lập, không nhận từ client payload
   return whitelisted;
 }
 
 export async function addStudent(student) {
+  const nowStr = new Date().toISOString();
   const dataToSave = validateAndWhitelistStudent(student, false);
+  // Khởi tạo phiên bản 1 cho học sinh mới
+  dataToSave.version = 1;
+  dataToSave.updatedAt = nowStr;
+
   const { id } = student;
   
   if (!id) {
-    // Sử dụng Firestore Auto-generated ID để tránh Race Condition
+    // Sử dụng Firestore Auto-generated ID
     const docRef = doc(collection(db, COLLECTIONS.STUDENTS));
     student.id = docRef.id;
     await setDoc(docRef, dataToSave);
   } else {
     await setDoc(doc(db, COLLECTIONS.STUDENTS, id), dataToSave);
   }
-  return student;
+  return { ...student, version: 1, updatedAt: nowStr };
 }
 
-export async function updateStudent(student) {
-  const dataToSave = validateAndWhitelistStudent(student, true);
-  await setDoc(doc(db, COLLECTIONS.STUDENTS, student.id), dataToSave, { merge: true });
-  return student;
+export async function updateStudent(student, expectedVersion) {
+  if (!student || !student.id) {
+    throw new Error('ID học sinh không hợp lệ');
+  }
+
+  // Strict Policy: expectedVersion là bắt buộc khi cập nhật
+  const targetExpectedVersion = expectedVersion !== undefined ? expectedVersion : student.expectedVersion;
+
+  if (targetExpectedVersion === undefined || targetExpectedVersion === null) {
+    const err = new Error('Thiếu expectedVersion cho thao tác cập nhật học sinh');
+    err.code = 'VALIDATION';
+    throw err;
+  }
+
+  const docRef = doc(db, COLLECTIONS.STUDENTS, student.id);
+  const nowStr = new Date().toISOString();
+  let updatedResult = null;
+
+  await runTransaction(db, async (transaction) => {
+    const docSnap = await transaction.get(docRef);
+    if (!docSnap.exists()) {
+      const err = new Error('Học sinh không tồn tại hoặc đã bị xóa');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+
+    const serverData = docSnap.data();
+
+    // Legacy Migration: Nếu document chưa có version trong database, serverVersion = 0
+    const serverVersion = typeof serverData.version === 'number' ? serverData.version : 0;
+
+    // Strict Optimistic Concurrency Check: Phiên bản server phải khớp chính xác expectedVersion
+    if (serverVersion !== targetExpectedVersion) {
+      const err = new Error('Dữ liệu này đã được thay đổi bởi người dùng khác. Vui lòng tải lại dữ liệu mới nhất.');
+      err.code = 'CONFLICT';
+      throw err;
+    }
+
+    const nextVersion = serverVersion + 1;
+    const dataToSave = validateAndWhitelistStudent(student, true);
+    dataToSave.version = nextVersion;
+    dataToSave.updatedAt = nowStr;
+
+    transaction.set(docRef, dataToSave, { merge: true });
+    updatedResult = { ...student, version: nextVersion, updatedAt: nowStr };
+  });
+
+  return updatedResult;
 }
 
 export async function deleteStudent(id) {
@@ -239,7 +289,11 @@ function validateAndWhitelistTuition(record) {
 
 export async function saveTuitionRecord(record) {
   if (!record.id) {
-    record.id = `TUI-${record.month.replace('-', '')}-${Date.now().toString().slice(-4)}`;
+    if (record.month && record.studentId) {
+      record.id = `TUI-${record.month.replace('-', '')}-${record.studentId}`;
+    } else {
+      record.id = doc(collection(db, COLLECTIONS.TUITION)).id;
+    }
   }
   const dataToSave = validateAndWhitelistTuition(record);
   await setDoc(doc(db, COLLECTIONS.TUITION, record.id), dataToSave);

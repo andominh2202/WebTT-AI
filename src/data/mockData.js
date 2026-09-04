@@ -3,10 +3,6 @@
  * Môn học: Toán, Văn, Anh, Lý, Hóa × Lớp 6-12
  */
 
-// Tạo danh sách 35 môn học: 5 môn × 7 lớp (6-12)
-const BASE_SUBJECTS = ['Toán', 'Văn', 'Anh', 'Lý', 'Hóa'];
-const GRADES = [6, 7, 8, 9, 10, 11, 12];
-
 export const CLASS_MAP = {
   "Khối 6": {
     "Toán 6": ["Chị Dung", "Anh Trọng"],

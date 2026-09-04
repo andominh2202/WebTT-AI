@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
-import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { calculateTuitionForMonth } from '../../utils/tuitionCalculator';
+import { normalizeError } from '../../utils/errorHandler';
 import { X, Check, Loader2 } from 'lucide-react';
 
 export default function PaymentModal({ isOpen, onClose, studentId, currentMonth }) {
@@ -82,7 +81,8 @@ export default function PaymentModal({ isOpen, onClose, studentId, currentMonth 
       showToast('Thành công', 'Đã ghi nhận thông tin đóng học phí!', 'success');
       onClose();
     } catch (error) {
-      showToast('Lỗi', error.message || 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+      const normalized = normalizeError(error);
+      showToast('Thất bại', normalized.message, 'danger');
     } finally {
       setIsSubmitting(false);
     }

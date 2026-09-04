@@ -1,9 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useUI } from "../context/UIContext";
 import { useAuth } from "../context/AuthContext";
-import { useSettings } from "../context/SettingsContext";
-import { useStudent } from "../context/StudentContext";
-import { useTuition } from "../context/TuitionContext";
 import { LayoutDashboard, Users, Receipt, BarChart3, Settings, Sun, Moon, GraduationCap, LogOut } from 'lucide-react';
 
 const navItems = [

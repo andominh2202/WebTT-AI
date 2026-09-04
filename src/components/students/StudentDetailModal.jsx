@@ -1,7 +1,4 @@
 import { useMemo } from 'react';
-import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
-import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate, calculateAge } from '../../utils/storage';
@@ -18,7 +15,27 @@ export default function StudentDetailModal({ isOpen, onClose, studentId }) {
     return tuition.filter(t => t.studentId === studentId).sort((a, b) => b.month.localeCompare(a.month));
   }, [studentId, tuition]);
 
-  if (!isOpen || !student) return null;
+  if (!isOpen) return null;
+
+  if (!student) {
+    return (
+      <div className="modal-overlay active" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="modal-container" style={{ maxWidth: '420px', textAlign: 'center', padding: '1.5rem' }}>
+          <div className="modal-header" style={{ borderBottom: 'none', justifyContent: 'flex-end', padding: 0 }}>
+            <button className="modal-close" onClick={onClose}><X size={22} /></button>
+          </div>
+          <div style={{ padding: '1rem 0' }}>
+            <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Không tìm thấy hồ sơ</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Học sinh này không tồn tại hoặc đã được xóa khỏi hệ thống.
+            </p>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Đóng</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={e => e.target === e.currentTarget && onClose()}>

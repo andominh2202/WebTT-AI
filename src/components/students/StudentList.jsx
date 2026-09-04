@@ -3,9 +3,9 @@ import { useUI } from "../../context/UIContext";
 import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
-import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate, calculateAge } from '../../utils/storage';
 import { Search, Plus, Eye, Pencil, Trash2, Phone, CheckCircle, Clock, Users, Loader2 } from 'lucide-react';
+import { normalizeError } from '../../utils/errorHandler';
 
 export default function StudentList({ onAddStudent, onEditStudent, onViewStudent }) {
   const { students, deleteStudent, loadMore, hasMore, loading } = useStudent();
@@ -46,7 +46,8 @@ export default function StudentList({ onAddStudent, onEditStudent, onViewStudent
         showToast('Đã xóa', `Đã xóa học sinh ${studentToDelete.fullName}`, 'danger');
         setStudentToDelete(null);
       } catch (error) {
-        showToast('Lỗi', error.message || 'Không thể xóa học sinh', 'danger');
+        const normalized = normalizeError(error);
+        showToast('Thất bại', normalized.message, 'danger');
       } finally {
         setIsDeleting(false);
       }

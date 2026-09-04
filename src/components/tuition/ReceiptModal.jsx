@@ -1,7 +1,4 @@
 import { useMemo } from 'react';
-import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
-import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency, formatDate } from '../../utils/storage';
@@ -30,7 +27,7 @@ export default function ReceiptModal({ isOpen, onClose, studentId, currentMonth 
       amount: formatCurrency(record.paidAmount),
       notes: record.notes || 'Không có ghi chú',
     };
-  }, [studentId, currentMonth]);
+  }, [studentId, currentMonth, students, tuition]);
 
   if (!isOpen || !data) return null;
 

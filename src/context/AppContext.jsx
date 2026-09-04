@@ -16,7 +16,7 @@ export function AppProvider({ children }) {
   const [teachers, setTeachers] = useState([]);
   const [teacherFees, setTeacherFees] = useState({});
   const [toasts, setToasts] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, _setRefreshKey] = useState(0);
 
   // Authentication State (không lưu localStorage nữa để bảo mật)
   const [currentUser, setCurrentUser] = useState(() => {
@@ -99,15 +99,15 @@ export function AppProvider({ children }) {
     await S.addStudent(data);
   }, []);
 
-  const handleUpdateStudent = useCallback(async (data) => {
-    await S.updateStudent(data);
+  const handleUpdateStudent = useCallback(async (data, expectedVersion) => {
+    await S.updateStudent(data, expectedVersion);
   }, []);
 
   const handleDeleteStudent = useCallback(async (id) => {
     await S.deleteStudent(id);
   }, []);
 
-  const handleAddSubject = useCallback((name) => {
+  const handleAddSubject = useCallback((_name) => {
     // Left empty/unimplemented for simplicity if not needed
   }, []);
 
@@ -125,6 +125,7 @@ export function AppProvider({ children }) {
       showToast('Thành công', 'Đã lưu cài đặt học phí giáo viên', 'success');
     } catch (e) {
       showToast('Lỗi', 'Không thể lưu cài đặt', 'error');
+      throw e;
     }
   }, [showToast]);
 
@@ -144,7 +145,7 @@ export function AppProvider({ children }) {
       try {
         await S.exportDatabase();
         showToast('Thành công', 'Đã tải xuống file sao lưu', 'success');
-      } catch (err) {
+      } catch {
         showToast('Lỗi', 'Không thể sao lưu dữ liệu', 'danger');
       }
     },
@@ -153,7 +154,7 @@ export function AppProvider({ children }) {
         await S.importDatabase(jsonData);
         showToast('Thành công', 'Đã khôi phục dữ liệu từ file', 'success');
         setTimeout(() => window.location.reload(), 1500);
-      } catch (err) {
+      } catch {
         showToast('Lỗi', 'File sao lưu không hợp lệ hoặc lỗi kết nối', 'danger');
       }
     },

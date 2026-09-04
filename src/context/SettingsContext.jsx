@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import * as S from '../utils/storage';
 import { useUI } from './UIContext';
+import { normalizeError } from '../utils/errorHandler';
 
 const SettingsContext = createContext(null);
 
@@ -28,7 +29,9 @@ export function SettingsProvider({ children }) {
       await S.saveSettings('teacherFees', newFees);
       showToast('Thành công', 'Đã lưu cài đặt học phí giáo viên', 'success');
     } catch (e) {
-      showToast('Lỗi', 'Không thể lưu cài đặt', 'error');
+      const norm = normalizeError(e);
+      showToast('Lỗi', norm.message, 'danger');
+      throw e;
     }
   }, [showToast]);
 
@@ -37,7 +40,8 @@ export function SettingsProvider({ children }) {
       await S.exportDatabase();
       showToast('Thành công', 'Đã tải xuống file sao lưu', 'success');
     } catch (err) {
-      showToast('Lỗi', 'Không thể sao lưu dữ liệu', 'danger');
+      const norm = normalizeError(err);
+      showToast('Lỗi', norm.message, 'danger');
     }
   };
 
@@ -47,7 +51,8 @@ export function SettingsProvider({ children }) {
       showToast('Thành công', 'Đã khôi phục dữ liệu từ file', 'success');
       setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
-      showToast('Lỗi', 'File sao lưu không hợp lệ hoặc lỗi kết nối', 'danger');
+      const norm = normalizeError(err);
+      showToast('Lỗi', norm.message, 'danger');
     }
   };
 

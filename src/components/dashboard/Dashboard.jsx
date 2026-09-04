@@ -1,22 +1,17 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
-import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";
 import { formatCurrency } from '../../utils/storage';
-import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, CreditCard, BarChart2, FileSpreadsheet, CheckCircle, Clock, Receipt, BarChart3, Plus } from 'lucide-react';
+import { Users, Award, UserPlus, DollarSign, UserCheck, Zap, FileSpreadsheet, CheckCircle, Clock, Receipt, BarChart3 } from 'lucide-react';
 
-export default function Dashboard({ onAddStudent, onExportCSV }) {
-  const { currentUser } = useAuth();
+export default function Dashboard({ _onAddStudent, onExportCSV }) {
   const { students, totalCount, loading: studentsLoading } = useStudent();
   const { tuition, loading: tuitionLoading } = useTuition();
   const navigate = useNavigate();
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(true);
 
   const loading = studentsLoading || tuitionLoading;
-
 
   const stats = useMemo(() => {
     const total = totalCount || students.length;
@@ -34,7 +29,7 @@ export default function Dashboard({ onAddStudent, onExportCSV }) {
     });
 
     return { total, official, trial, revenue, debt: Math.max(0, expected - revenue) };
-  }, [students, tuition]);
+  }, [students, tuition, totalCount]);
 
   const recentStudents = useMemo(() => students.slice(0, 5), [students]);
 

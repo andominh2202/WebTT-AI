@@ -4,6 +4,7 @@ import { auth, db } from '../config/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import * as S from '../utils/storage';
 import { useUI } from './UIContext';
+import { normalizeError } from '../utils/errorHandler';
 
 const AuthContext = createContext(null);
 
@@ -32,7 +33,7 @@ export function AuthProvider({ children }) {
             role: userData?.role || 'user',
             displayName: userData?.displayName || firebaseUser.email.split('@')[0]
           });
-        } catch(e) {
+        } catch (e) {
           console.error("Lỗi lấy thông tin user khi khôi phục phiên:", e);
           setCurrentUser({
             uid: firebaseUser.uid,
@@ -57,19 +58,27 @@ export function AuthProvider({ children }) {
       if (userObj) {
         setCurrentUser(userObj);
         showToast('Thành công', `Đăng nhập với vai trò ${userObj.displayName}`, 'success');
-        return true;
+        return { success: true };
       }
     } catch (error) {
-      console.error('Lỗi đăng nhập:', error);
+      const normalized = normalizeError(error);
+      showToast('Đăng nhập thất bại', normalized.message, 'danger');
+      return { success: false, error: normalized };
     }
-    showToast('Thất bại', 'Sai tên tài khoản hoặc mật khẩu', 'danger');
-    return false;
+    const normalized = normalizeError(new Error('Sai tên tài khoản hoặc mật khẩu'));
+    showToast('Đăng nhập thất bại', normalized.message, 'danger');
+    return { success: false, error: normalized };
   }, [showToast]);
 
   const logout = useCallback(async () => {
-    await S.logoutUser();
-    setCurrentUser(null);
-    showToast('Thông báo', 'Đã đăng xuất tài khoản', 'info');
+    try {
+      await S.logoutUser();
+    } catch (err) {
+      console.error('Lỗi khi đăng xuất:', err);
+    } finally {
+      setCurrentUser(null);
+      showToast('Thông báo', 'Đã đăng xuất tài khoản', 'info');
+    }
   }, [showToast]);
 
   return (

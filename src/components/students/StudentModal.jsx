@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
-import { useTuition } from "../../context/TuitionContext";
 import { CLASS_MAP } from '../../data/mockData';
-import { X, Save, Plus, Check, Loader2 } from 'lucide-react';
+import { X, Save, Plus, Loader2 } from 'lucide-react';
+import { normalizeError } from '../../utils/errorHandler';
 
 const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
 
@@ -37,35 +36,29 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
   }), []);
 
   const filteredSubjects = useMemo(() => {
-    if (!selGrade) return selSubject ? [selSubject] : [];
-    const subjects = Object.keys(CLASS_MAP[selGrade] || {});
-    if (selSubject && !subjects.includes(selSubject)) {
-      return [...subjects, selSubject];
-    }
-    return subjects;
-  }, [selGrade, selSubject]);
+    if (!selGrade || !CLASS_MAP[selGrade]) return [];
+    return Object.keys(CLASS_MAP[selGrade]);
+  }, [selGrade]);
 
   const filteredTeachers = useMemo(() => {
-    if (!selGrade || !selSubject || !CLASS_MAP[selGrade]) return selTeacher ? [selTeacher] : [];
-    const teachers = CLASS_MAP[selGrade][selSubject] || [];
-    if (selTeacher && !teachers.includes(selTeacher)) {
-      return [...teachers, selTeacher];
-    }
-    return teachers;
-  }, [selGrade, selSubject, selTeacher]);
-
-  useEffect(() => {
-    if (filteredTeachers.length === 1) {
-      setSelTeacher(filteredTeachers[0]);
-    } else {
-      setSelTeacher('');
-    }
-  }, [filteredTeachers]);
+    if (!selGrade || !selSubject || !CLASS_MAP[selGrade]) return [];
+    return CLASS_MAP[selGrade][selSubject] || [];
+  }, [selGrade, selSubject]);
 
   const handleGradeChange = (val) => {
     setSelGrade(val);
     setSelSubject('');
     setSelTeacher('');
+  };
+
+  const handleSubjectChange = (val) => {
+    setSelSubject(val);
+    const teachers = (selGrade && CLASS_MAP[selGrade] && CLASS_MAP[selGrade][val]) || [];
+    if (teachers.length === 1) {
+      setSelTeacher(teachers[0]);
+    } else {
+      setSelTeacher('');
+    }
   };
 
   useEffect(() => {
@@ -81,8 +74,17 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
     }
   }, [selTeacher, selSubject, teacherFees, selScheduleDays.length]);
 
+  const expectedVersionRef = useRef(null);
+  const initializedStudentIdRef = useRef(null);
+
   useEffect(() => {
-    if (editStudentId && isOpen) {
+    if (!isOpen) {
+      initializedStudentIdRef.current = null;
+      expectedVersionRef.current = null;
+      return;
+    }
+
+    if (editStudentId && initializedStudentIdRef.current !== editStudentId) {
       const s = students.find(x => x.id === editStudentId);
       if (s) {
         setForm({
@@ -91,35 +93,29 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
           status: s.status || 'official', notes: s.notes || '',
         });
         setSelectedSubjects([...(s.subjects || [])]);
+        // Legacy migration: nếu học sinh chưa có version thì expectedVersion = 0
+        expectedVersionRef.current = typeof s.version === 'number' ? s.version : 0;
+        initializedStudentIdRef.current = editStudentId;
+        setSelGrade('');
+        setSelSubject('');
+        setSelTeacher('');
       }
-    } else if (isOpen) {
+    } else if (!editStudentId && initializedStudentIdRef.current !== 'new') {
       setForm({ fullName: '', parentPhone: '', dob: '', school: '', referrer: '', status: 'official', notes: '' });
       setSelectedSubjects([]);
+      expectedVersionRef.current = null;
+      initializedStudentIdRef.current = 'new';
+      setSelGrade('');
+      setSelSubject('');
+      setSelTeacher('');
     }
-    setSelGrade('');
-    setSelSubject('');
-    setSelTeacher('');
-  }, [isOpen, editStudentId]);
+  }, [isOpen, editStudentId, students]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
-
-  const handleSelMonthlyFeeChange = (val) => {
-    const mFee = parseFloat(val) || 0;
-    const pFee = mFee / ((selScheduleDays.length || 1) * 4);
-    setSelMonthlyFee(mFee);
-    setSelFeePerLesson(Math.round(pFee));
-  };
-
-  const handleSelFeePerLessonChange = (val) => {
-    const pFee = parseFloat(val) || 0;
-    const mFee = pFee * ((selScheduleDays.length || 1) * 4);
-    setSelFeePerLesson(pFee);
-    setSelMonthlyFee(mFee);
-  };
 
   const handleAddToList = () => {
     if (!selSubject || !selTeacher) {
@@ -209,15 +205,24 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
     setIsSubmitting(true);
     try {
       if (isEditing) {
-        await updateStudent({ ...studentData, id: editStudentId });
+        await updateStudent({
+          ...studentData,
+          id: editStudentId,
+        }, expectedVersionRef.current);
         showToast('Thành công', 'Đã cập nhật thông tin học sinh', 'success');
+        onClose();
       } else {
         await addStudent(studentData);
         showToast('Thành công', `Đã thêm ${form.fullName}`, 'success');
+        onClose();
       }
-      onClose();
     } catch (error) {
-      showToast('Lỗi', error.message || 'Có lỗi xảy ra, vui lòng thử lại', 'danger');
+      const normalized = normalizeError(error);
+      if (normalized.type === 'CONFLICT') {
+        showToast('Xung đột dữ liệu', normalized.message, 'warning');
+      } else {
+        showToast('Thất bại', normalized.message, 'danger');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -280,7 +285,7 @@ export default function StudentModal({ isOpen, onClose, editStudentId }) {
                     </div>
                     <div>
                       <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Môn học</label>
-                      <select className="form-control" value={selSubject} onChange={e => setSelSubject(e.target.value)} disabled={!selGrade}>
+                      <select className="form-control" value={selSubject} onChange={e => handleSubjectChange(e.target.value)} disabled={!selGrade}>
                         <option value="">-- Chọn Môn --</option>
                         {filteredSubjects.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>

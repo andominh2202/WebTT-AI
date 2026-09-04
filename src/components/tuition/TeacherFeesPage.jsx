@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useUI } from '../../context/UIContext';
 import { CLASS_MAP } from '../../data/mockData';
-import { Save, Receipt, Search } from 'lucide-react';
+import { Save, Receipt, Search, Loader2 } from 'lucide-react';
 
 export default function TeacherFeesPage() {
   const { teacherFees, saveTeacherFees } = useSettings();
@@ -10,6 +10,7 @@ export default function TeacherFeesPage() {
   
   const [fees, setFees] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   
   // Add new teacher/subject form state
   const [newTeacher, setNewTeacher] = useState('');
@@ -22,7 +23,7 @@ export default function TeacherFeesPage() {
     } else {
       // Initialize from CLASS_MAP if empty
       const initialMap = {};
-      Object.entries(CLASS_MAP).forEach(([grade, subjectsObj]) => {
+      Object.entries(CLASS_MAP).forEach(([_grade, subjectsObj]) => {
         Object.entries(subjectsObj).forEach(([subject, teachersList]) => {
           teachersList.forEach(teacher => {
             if (!initialMap[teacher]) initialMap[teacher] = {};
@@ -114,8 +115,16 @@ export default function TeacherFeesPage() {
     showToast('Thành công', 'Đã thêm môn học mới', 'success');
   };
 
-  const handleSave = () => {
-    saveTeacherFees(fees);
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveTeacherFees(fees);
+    } catch {
+      // Thông báo lỗi đã được xử lý bởi SettingsContext
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const filteredTeachers = Object.entries(fees)
@@ -127,8 +136,9 @@ export default function TeacherFeesPage() {
       <div className="card" style={{ maxWidth: 1000, margin: '0 auto 1.5rem' }}>
         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="card-title"><Receipt size={18} /> Bảng Giá Học Phí Theo Giáo Viên & Môn Học</div>
-          <button className="btn btn-primary btn-sm" onClick={handleSave}>
-            <Save size={16} /> Lưu bảng giá
+          <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+            {isSaving ? ' Đang lưu...' : ' Lưu bảng giá'}
           </button>
         </div>
         

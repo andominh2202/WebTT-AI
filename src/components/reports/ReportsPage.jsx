@@ -1,6 +1,4 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useUI } from "../../context/UIContext";
-import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useStudent } from "../../context/StudentContext";
 import { useTuition } from "../../context/TuitionContext";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Save, Plus, X, Coins } from 'lucide-react';
+import { Save, Plus, X, Coins, Loader2 } from 'lucide-react';
 
 export default function TuitionSettings() {
   const { teacherFees, saveTeacherFees, teachers, showToast } = useApp();
@@ -9,6 +9,7 @@ export default function TuitionSettings() {
   const [fees, setFees] = useState({});
   const [newTeacher, setNewTeacher] = useState('');
   const [newFee, setNewFee] = useState(150000);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setFees(teacherFees || {});
@@ -45,16 +46,25 @@ export default function TuitionSettings() {
     setNewFee(150000);
   };
 
-  const handleSave = () => {
-    saveTeacherFees(fees);
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveTeacherFees(fees);
+    } catch {
+      // Handled by context
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="card" style={{ maxWidth: 800, margin: '0 auto 1.5rem' }}>
       <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="card-title"><Coins size={18} /> Cài đặt Học phí theo Giáo viên</div>
-        <button className="btn btn-primary btn-sm" onClick={handleSave}>
-          <Save size={16} /> Lưu bảng giá
+        <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+          {isSaving ? ' Đang lưu...' : ' Lưu bảng giá'}
         </button>
       </div>
       
